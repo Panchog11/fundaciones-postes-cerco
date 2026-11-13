@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fundaciones Postes de Cerco</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --ink:#1d2330; --muted:#5d6678; --line:#d9dde5;
+  --accent:#1f5fa8; --accent-ink:#ffffff; --ok:#1d7a3e; --ok-bg:#e3f4e9; --bad:#b3261e; --bad-bg:#fbe6e4;
+  --warn:#8a5a00; --warn-bg:#fdf1d8; --input:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171d; --card:#1d2129; --ink:#e7eaf0; --muted:#9aa3b5; --line:#323846;
+    --accent:#5d9ce6; --accent-ink:#0d1420; --ok:#6fd394; --ok-bg:#163223; --bad:#ff8a80; --bad-bg:#3a1b1a;
+    --warn:#f2c46b; --warn-bg:#3a2e14; --input:#262b35;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171d; --card:#1d2129; --ink:#e7eaf0; --muted:#9aa3b5; --line:#323846;
+  --accent:#5d9ce6; --accent-ink:#0d1420; --ok:#6fd394; --ok-bg:#163223; --bad:#ff8a80; --bad-bg:#3a1b1a;
+  --warn:#f2c46b; --warn-bg:#3a2e14; --input:#262b35;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 16px}
+header h1{margin:0;font-size:20px}
+header p{margin:2px 0 0;color:var(--muted)}
+main{max-width:1320px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:16px}
+@media (max-width:900px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 8px;color:var(--accent)}
+.card h3{font-size:14px;margin:12px 0 6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+.grid .full{grid-column:1/-1}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:2px}
+input,select{font:inherit;color:var(--ink);background:var(--input);border:1px solid var(--line);border-radius:6px;padding:5px 7px;width:100%}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.hint{font-size:11.5px;color:var(--muted);margin:6px 0 0}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.btn:disabled{opacity:.6;cursor:wait}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.bad{background:var(--bad-bg);color:var(--bad)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:10px}
+.kpi b{display:block;font-size:13px}
+.kpi span{font-size:12px;color:var(--muted)}
+.svgwrap{overflow-x:auto;background:#fff;border-radius:8px;border:1px solid var(--line)}
+.svgwrap svg{width:100%;min-width:760px;height:auto;display:block}
+details summary{cursor:pointer;color:var(--accent);font-weight:600}
+.scroll{overflow-x:auto}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Fundaciones de postes de cerco — hormigón simple</h1>
+  <p>Viento según CIRSOC 102-2005 (procedimiento simplificado para cercos/carteles abiertos) · Método de Sulzberger · Postes intermedios, de refuerzo, esquineros y de portón</p>
+</header>
+<main>
+<section id="inputs">
+  <div class="card">
+    <h2>0 · Datos del proyecto</h2>
+    <div class="grid">
+      <label class="full">Proyecto<input id="proj" value="" placeholder="Nombre del proyecto"></label>
+      <label>Plano de referencia<input id="docref" value="" placeholder="N° de plano"></label>
+      <label>Ubicación<input id="ubic" value="" placeholder="Localidad, provincia"></label>
+      <label>Elaboró<input id="autor" value=""></label>
+      <label>Fecha<input id="fecha" type="date"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>1 · Geometría del cerco</h2>
+    <div class="grid">
+      <label>Separación postes intermedios (m)<input id="sep" type="number" step="0.1" value="4"></label>
+      <label>Postes de refuerzo cada (m)<input id="sepRef" type="number" step="1" value="40"></label>
+      <label>Altura del tejido (m)<input id="hMesh" type="number" step="0.05" value="2.00"></label>
+      <label>Altura borde inferior tejido (m)<input id="hMeshBase" type="number" step="0.01" value="0.05"></label>
+      <label class="full">Alturas alambres de púas sobre NTN (m, separadas por coma)<input id="hPuas" value="2.20, 2.35, 2.50"></label>
+      <label>Diámetro alambre de púas (mm, efectivo)<input id="dPuas" type="number" step="0.1" value="4.0"></label>
+      <label>Peso tejido + alambres (kg/m)<input id="pesoCerco" type="number" step="0.1" value="2.5"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2 · Postes premoldeados (HºAº)</h2>
+    <div class="grid">
+      <label>Intermedio: ancho expuesto (m)<input id="piB" type="number" step="0.005" value="0.09"></label>
+      <label>Intermedio: espesor (m)<input id="piH" type="number" step="0.005" value="0.08"></label>
+      <label>Refuerzo: ancho (m)<input id="prB" type="number" step="0.005" value="0.105"></label>
+      <label>Refuerzo: espesor (m)<input id="prH" type="number" step="0.005" value="0.105"></label>
+      <label>Esquinero: ancho (m)<input id="peB" type="number" step="0.005" value="0.11"></label>
+      <label>Esquinero: espesor (m)<input id="peH" type="number" step="0.005" value="0.10"></label>
+      <label>Longitud total del poste (m)<input id="Lp" type="number" step="0.01" value="3.24"></label>
+      <label>Empotramiento en la fundación (m)<input id="le" type="number" step="0.01" value="0.55"></label>
+      <label>Peso específico HºAº (kN/m³)<input id="gHA" type="number" step="0.5" value="25"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Fundaciones (hormigón simple, sin armadura)</h2>
+    <div class="grid">
+      <label>Intermedio: forma<select id="fiForma"><option value="circ">Circular (pozo)</option><option value="cuad">Cuadrada</option></select></label>
+      <label>Intermedio: Ø o lado (m)<input id="fiD" type="number" step="0.05" value="0.60"></label>
+      <label class="full">Intermedio: profundidad t (m)<input id="fiT" type="number" step="0.05" value="0.65"></label>
+      <label>Refuerzo: forma<select id="frForma"><option value="circ">Circular (pozo)</option><option value="cuad">Cuadrada</option></select></label>
+      <label>Refuerzo: Ø o lado (m)<input id="frD" type="number" step="0.05" value="0.60"></label>
+      <label class="full">Refuerzo: profundidad t (m)<input id="frT" type="number" step="0.05" value="0.65"></label>
+      <label>Esquinero: forma<select id="feForma"><option value="circ">Circular (pozo)</option><option value="cuad">Cuadrada</option></select></label>
+      <label>Esquinero: Ø o lado (m)<input id="feD" type="number" step="0.05" value="0.60"></label>
+      <label class="full">Esquinero: profundidad t (m)<input id="feT" type="number" step="0.05" value="0.65"></label>
+      <label>Hormigón<select id="fcSel"><option value="15">H-15 (f'c 15 MPa)</option><option value="20" selected>H-20 (f'c 20 MPa)</option><option value="25">H-25 (f'c 25 MPa)</option></select></label>
+      <label>Peso esp. hormigón simple (kN/m³)<input id="gHS" type="number" step="0.5" value="23"></label>
+      <label>Recubrimiento lateral mínimo (m)<input id="recMin" type="number" step="0.01" value="0.10"></label>
+      <label>Espesor mínimo bajo el poste (m)<input id="fondoMin" type="number" step="0.01" value="0.05"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>4 · Datos del suelo (a cargar)</h2>
+    <div class="grid">
+      <label class="full">Tipo de suelo (precarga valores orientativos)
+        <select id="soilType">
+          <option value="custom">— Valores propios (estudio de suelos) —</option>
+          <option value="1">Suelo blando / relleno no compactado / arcilla blanda</option>
+          <option value="2">Arcilla media / limo arcilloso</option>
+          <option value="3">Arena fina o limosa suelta</option>
+          <option value="4" selected>Arena media densa / suelo aluvional</option>
+          <option value="5">Arcilla dura / arena con grava</option>
+          <option value="6">Grava compacta / suelo cementado</option>
+        </select></label>
+      <label>Coef. de compresibilidad C a 2 m (kg/cm³)<input id="C2" type="number" step="0.5" value="8"></label>
+      <label>Relación Cb / Ct (fondo / lateral)<input id="cbF" type="number" step="0.1" value="1.0"></label>
+      <label>Tensión admisible σadm (kg/cm²)<input id="sigAdm" type="number" step="0.1" value="1.5"></label>
+      <label>Peso unitario suelo γs (kN/m³)<input id="gS" type="number" step="0.5" value="18"></label>
+      <label>Ángulo de fricción interna φ (°)<input id="phi" type="number" step="1" value="32"></label>
+      <label>Giro admisible tg α<input id="tanA" type="number" step="0.001" value="0.01"></label>
+    </div>
+    <p class="hint">C (índice de compresibilidad de Sulzberger) a 2 m de profundidad; se adopta Ct = C·t/2. Los valores precargados son orientativos: reemplazarlos por los del estudio geotécnico del sitio.</p>
+  </div>
+
+  <div class="card">
+    <h2>5 · Viento del sitio (CIRSOC 102-2005)</h2>
+    <div class="grid">
+      <label>Velocidad básica V (m/s)<input id="V" type="number" step="0.5" value="45"></label>
+      <label>Categoría de exposición<select id="expo"><option value="B">B (urbano / suburbano)</option><option value="C" selected>C (terreno abierto)</option><option value="D">D (costa / agua)</option></select></label>
+      <label>Categoría estructura → I<select id="cat"><option value="0.87">I — bajo riesgo (I = 0,87)</option><option value="1.00" selected>II — normal (I = 1,00)</option><option value="1.15">III — (I = 1,15)</option></select></label>
+      <label>Kzt (topográfico)<input id="Kzt" type="number" step="0.05" value="1.0"></label>
+      <label>Kd (direccionalidad)<input id="Kd" type="number" step="0.05" value="0.85"></label>
+      <label>G (ráfaga)<input id="Gf" type="number" step="0.01" value="0.85"></label>
+      <label>Relación de solidez del tejido ε<input id="eps" type="number" step="0.01" value="0.25"></label>
+      <label>Cf tejido<select id="cfMode"><option value="auto">Automático según ε</option><option value="man">Manual</option></select></label>
+      <label>Cf tejido manual<input id="cfMan" type="number" step="0.05" value="1.30"></label>
+      <label>Cf poste (sección rectangular)<input id="cfPost" type="number" step="0.05" value="2.0"></label>
+      <label>Cf alambres y tubos (sección circular)<input id="cfWire" type="number" step="0.05" value="1.2"></label>
+      <label>Factor de mayoración viento (estado último)<input id="gW" type="number" step="0.1" value="1.6"></label>
+    </div>
+    <p class="hint">ε: tejido romboidal 2" limpio ≈ 0,10; con polvo/vegetación adherida 0,25–0,50; cubierto con media sombra → 1,0. Sulzberger se verifica con cargas de servicio.</p>
+  </div>
+
+  <div class="card">
+    <h2>6 · Tiro de alambres y puntales (refuerzo y esquinero)</h2>
+    <div class="grid">
+      <label class="full">Alturas alambres tensores lisos (m)<input id="hTens" value="0.10, 1.05, 2.00"></label>
+      <label>Tiro por alambre liso (kN)<input id="tTens" type="number" step="0.1" value="1.0"></label>
+      <label>Tiro por alambre de púas (kN)<input id="tPuas" type="number" step="0.1" value="0.5"></label>
+      <label>Refuerzo: ¿lleva puntales?<select id="usaPuntal"><option value="si" selected>Sí (puntal toma el tiro)</option><option value="no">No (tiro a la fundación)</option></select></label>
+      <label>Esquinero: ¿lleva puntales?<select id="usaPuntalE"><option value="si" selected>Sí (1 puntal por línea)</option><option value="no">No (tiro a la fundación)</option></select></label>
+      <label>Altura de fijación del puntal (m)<input id="ha" type="number" step="0.05" value="1.60"></label>
+      <label>Distancia horizontal base del puntal (m)<input id="xa" type="number" step="0.05" value="1.60"></label>
+      <label>Base puntal: Ø (m)<input id="dB" type="number" step="0.05" value="0.35"></label>
+      <label>Base puntal: profundidad (m)<input id="tB" type="number" step="0.05" value="0.70"></label>
+      <label>FS arrancamiento / deslizamiento<input id="fsMin" type="number" step="0.1" value="1.5"></label>
+      <label>Esquinero: ancho de influencia al viento (m)<input id="peTrib" type="number" step="0.1" value="4.0"></label>
+    </div>
+    <p class="hint">Refuerzo: tiro desequilibrado eventual (tensado de un lado o rotura de un paño). Esquinero: tiro permanente de las dos líneas a 90°. El tiro no se combina con el viento transversal.</p>
+  </div>
+
+  <div class="card">
+    <h2>7 · Postes de portón</h2>
+    <div class="grid">
+      <label>Poste: tubo Ø exterior (m)<input id="pgD" type="number" step="0.001" value="0.1016"></label>
+      <label>Poste: peso propio (kg/m)<input id="pgPeso" type="number" step="0.1" value="5.0"></label>
+      <label>Poste: longitud total (m)<input id="pgL" type="number" step="0.05" value="3.00"></label>
+      <label>Poste: empotramiento (m)<input id="pgLe" type="number" step="0.05" value="0.70"></label>
+      <label>Fundación: forma<select id="fgForma"><option value="circ">Circular (pozo)</option><option value="cuad" selected>Cuadrada (dado)</option></select></label>
+      <label>Fundación: Ø o lado (m)<input id="fgD" type="number" step="0.05" value="0.60"></label>
+      <label>Fundación: profundidad t (m)<input id="fgT" type="number" step="0.05" value="0.90"></label>
+      <label>Ancho de la hoja (m)<input id="hgL" type="number" step="0.05" value="3.00"></label>
+      <label>Altura de la hoja (m)<input id="hgH" type="number" step="0.05" value="2.00"></label>
+      <label>Altura borde inferior hoja (m)<input id="hgB" type="number" step="0.01" value="0.05"></label>
+      <label>Peso de la hoja (kg)<input id="hgP" type="number" step="1" value="80"></label>
+      <label>Solidez de la hoja ε (marco + tejido)<input id="hgEps" type="number" step="0.01" value="0.30"></label>
+      <label>¿Hoja con rueda de apoyo?<select id="hgRueda"><option value="no" selected>No (hoja en voladizo)</option><option value="si">Sí (sin momento por peso)</option></select></label>
+      <label>Ancho de cerco adyacente tomado (m)<input id="pgTrib" type="number" step="0.1" value="0"></label>
+    </div>
+    <p class="hint">Portón de 6,00 m de dos hojas → hoja de 3,00 m por poste. Para la puerta peatonal, cargar su ancho de hoja. Se considera la hoja abierta a 90° con viento normal a ella, combinado con el momento por peso de la hoja en voladizo (M = P·L/2).</p>
+  </div>
+</section>
+
+<section id="results">
+  <div class="card">
+    <h2>Resumen</h2>
+    <div class="summary" id="summary"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="btnWord">Generar memoria de cálculo (Word)</button>
+      <span class="hint" id="wordMsg"></span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Esquema</h2>
+    <div class="svgwrap" id="sketch"></div>
+    <p class="hint">Esquema de alturas y profundidades a escala; separación horizontal entre postes sin escala.</p>
+  </div>
+  <div class="card" id="resViento"></div>
+  <div class="card">
+    <div class="tabs" id="tabs"></div>
+    <div id="resPost"></div>
+  </div>
+  <div class="card">
+    <h2>Notas del método</h2>
+    <details><summary>Ver hipótesis y fórmulas</summary>
+      <div id="notas" class="hint" style="font-size:13px;color:var(--ink)"></div>
+    </details>
+  </div>
+</section>
+</main>
+
+<script src="lib/docx.iife.js"></script>
+<script>
+if (typeof docx === "undefined") {
+  const s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.iife.js";
+  document.head.appendChild(s);
+}
+</script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const v = id => parseFloat(String($(id).value).replace(",", "."));
+const list = id => String($(id).value).split(/[;\s]+|,(?=\s)|,(?=\d+\.)/).map(x => parseFloat(x.replace(",", "."))).filter(x => isFinite(x) && x > 0);
+const f = (x, d = 2) => isFinite(x) ? x.toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }) : "—";
+const KG2KN = 0.00980665;
+const KGCM3_2_KNM3 = 9806.65;
+const KGCM2_2_KPA = 98.0665;
+
+const SOILS = {
+  "1": { C2: 3,  sig: 0.5, g: 17, phi: 20, n: "Suelo blando / relleno no compactado / arcilla blanda" },
+  "2": { C2: 5,  sig: 1.0, g: 18, phi: 24, n: "Arcilla media / limo arcilloso" },
+  "3": { C2: 5,  sig: 1.0, g: 17, phi: 28, n: "Arena fina o limosa suelta" },
+  "4": { C2: 8,  sig: 1.5, g: 18, phi: 32, n: "Arena media densa / suelo aluvional" },
+  "5": { C2: 10, sig: 2.0, g: 19, phi: 35, n: "Arcilla dura / arena con grava" },
+  "6": { C2: 14, sig: 3.0, g: 20, phi: 38, n: "Grava compacta / suelo cementado" }
+};
+const KZ = { B: 0.57, C: 0.85, D: 1.03 };
+const S_TAB = [[0, 1.5], [0.1, 1.5], [0.2, 1.383], [0.3, 1.317], [0.4, 1.260], [0.5, 1.208], [0.6, 1.150], [0.7, 1.115], [0.8, 1.075], [0.9, 1.040], [1.0, 1.0]];
+function sFactor(r) {
+  if (r >= 1) return 1.0;
+  for (let i = 1; i < S_TAB.length; i++) {
+    const [x0, y0] = S_TAB[i - 1], [x1, y1] = S_TAB[i];
+    if (r <= x1) return y0 + (y1 - y0) * (r - x0) / (x1 - x0);
+  }
+  return 1.0;
+}
+const cfMesh = eps => eps < 0.1 ? 1.2 : eps < 0.3 ? 1.3 : 1.5;
+
+function readInputs() {
+  const I = {};
+  ["sep","sepRef","hMesh","hMeshBase","dPuas","pesoCerco","piB","piH","prB","prH","peB","peH","Lp","le","gHA","fiD","fiT","frD","frT","feD","feT","gHS","recMin","fondoMin",
+   "C2","cbF","sigAdm","gS","phi","tanA","V","Kzt","Kd","Gf","eps","cfMan","cfPost","cfWire","gW","tTens","tPuas","ha","xa","dB","tB","fsMin","peTrib",
+   "pgD","pgPeso","pgL","pgLe","fgD","fgT","hgL","hgH","hgB","hgP","hgEps","pgTrib"].forEach(k => I[k] = v(k));
+  I.fc = v("fcSel"); I.Iw = v("cat"); I.expo = $("expo").value; I.cfMode = $("cfMode").value;
+  I.catTxt = $("cat").selectedOptions[0].text;
+  I.fiForma = $("fiForma").value; I.frForma = $("frForma").value; I.feForma = $("feForma").value; I.fgForma = $("fgForma").value;
+  I.hPuas = list("hPuas"); I.hTens = list("hTens");
+  I.usaPuntal = $("usaPuntal").value === "si";
+  I.usaPuntalE = $("usaPuntalE").value === "si";
+  I.rueda = $("hgRueda").value === "si";
+  I.soilTxt = $("soilType").value === "custom" ? "Valores propios (estudio de suelos)" : SOILS[$("soilType").value].n;
+  ["proj","docref","ubic","autor","fecha"].forEach(k => I[k] = $(k).value);
+  return I;
+}
+
+// ---------- Viento ----------
+function qzCalc(I) {
+  const Kz = KZ[I.expo];
+  return { Kz, qz: 0.613 * Kz * I.Kzt * I.Kd * I.V * I.V * I.Iw / 1000 };
+}
+// o: { pb, hl, cfPost, trib, extra:[{name,A,Cf,z}] }
+function windLoads(I, o) {
+  const { Kz, qz } = qzCalc(I);
+  const cf = I.cfMode === "auto" ? cfMesh(I.eps) : I.cfMan;
+  const loads = [];
+  if (o.trib > 0) {
+    const Am = I.eps * I.hMesh * o.trib;
+    loads.push({ name: "Tejido romboidal", A: Am, Cf: cf, z: I.hMeshBase + I.hMesh / 2 });
+    I.hPuas.forEach((h, i) => loads.push({ name: `Alambre de púas ${i + 1}`, A: I.dPuas / 1000 * o.trib, Cf: I.cfWire, z: h }));
+  }
+  loads.push({ name: "Fuste del poste", A: o.pb * o.hl, Cf: o.cfPost, z: o.hl / 2 });
+  (o.extra || []).forEach(e => loads.push(e));
+  loads.forEach(l => l.F = qz * I.Gf * l.Cf * l.A);
+  const H = loads.reduce((s, l) => s + l.F, 0);
+  const M0 = loads.reduce((s, l) => s + l.F * l.z, 0);
+  return { Kz, qz, cf, hl: o.hl, trib: o.trib, loads, H, M0, zR: H ? M0 / H : 0 };
+}
+
+// ---------- Fundación ----------
+function geomFound(forma, d, t) {
+  const circ = forma === "circ";
+  const A = circ ? Math.PI * d * d / 4 : d * d;
+  return { circ, A, a: circ ? d * Math.sqrt(Math.PI) / 2 : d, per: circ ? Math.PI * d : 4 * d, Vol: A * t };
+}
+// P: { forma, d, t, pb, ph, round, le, Wpost, Wext }
+function weights(I, P, t = P.t) {
+  const g = geomFound(P.forma, P.d, t);
+  const Ain = P.round ? Math.PI * P.pb * P.pb / 4 : P.pb * P.ph;
+  const Wblock = I.gHS * (g.Vol - Ain * Math.min(P.le, t));
+  return { Wpost: P.Wpost, Wblock, Wext: P.Wext, G: P.Wpost + Wblock + P.Wext };
+}
+function sulzberger(I, forma, d, t, G, loads, Mextra = 0, combine = false) {
+  const g = geomFound(forma, d, t);
+  const a = g.a, tanA = I.tanA;
+  const Ct = I.C2 * KGCM3_2_KNM3 * t / 2;
+  const Cb = Ct * I.cbF;
+  const Ms = a * Math.pow(t, 3) * Ct * tanA / 36;
+  const x = Math.sqrt(2 * G / (a * Cb * tanA));
+  let Mb, contacto;
+  if (x <= a) { Mb = G * (a / 2 - x / 3); contacto = "parcial"; }
+  else { Mb = Math.pow(a, 4) * Cb * tanA / 12; contacto = "total"; }
+  const MvF = loads.reduce((s, l) => s + l.F * (l.z + 2 * t / 3), 0);
+  const Mv = combine ? Math.hypot(MvF, Mextra) : MvF + Mextra;
+  const r = Ms / Mb, s = sFactor(r), Mr = Ms + Mb;
+  return { a, Ct, Cb, Ms, Mb, x, contacto, MvF, Mextra, combine, Mv, r, s, Mr, FS: Mr / Mv, ok: Mr >= s * Mv };
+}
+function tMin(I, P, loads, Mextra = 0, combine = false) {
+  for (let t = 0.30; t <= 3.0001; t += 0.05) {
+    if (sulzberger(I, P.forma, P.d, t, weights(I, P, t).G, loads, Mextra, combine).ok) return Math.round(t * 100) / 100;
+  }
+  return NaN;
+}
+function concreteChecks(I, P, H, M0, G) {
+  const g = geomFound(P.forma, P.d, P.t);
+  const e = H > 0 ? M0 / H : 0;
+  const Vn = 0.85 * I.fc * 1000 * P.pb * P.le / (1 + 3.6 * e / P.le);
+  const phi = 0.65, Vu = I.gW * H;
+  const dimP = P.round ? P.pb : (g.circ ? Math.hypot(P.pb, P.ph) : Math.max(P.pb, P.ph));
+  const rec = (P.d - dimP) / 2;
+  const fondo = P.t - P.le;
+  const sig = G / g.A, sigAdm = I.sigAdm * KGCM2_2_KPA;
+  return { e, Vn, phi, Vu, okV: phi * Vn >= Vu, rec, okRec: rec >= I.recMin - 1e-9, fondo, okFondo: fondo >= I.fondoMin - 1e-9, sig, sigAdm, okSig: sig <= sigAdm };
+}
+
+// ---------- Tiro y puntales ----------
+function tensionLoads(I, factor = 1) {
+  const L = [];
+  I.hTens.forEach((h, i) => L.push({ name: `Alambre tensor ${i + 1}`, F: I.tTens * factor, z: h }));
+  I.hPuas.forEach((h, i) => L.push({ name: `Alambre de púas ${i + 1}`, F: I.tPuas * factor, z: h }));
+  const H = L.reduce((s, l) => s + l.F, 0);
+  const M0 = L.reduce((s, l) => s + l.F * l.z, 0);
+  return { loads: L, H, M0, zR: H ? M0 / H : 0 };
+}
+function strutCalc(I, T, W, P, nLines) {
+  const H = T.H, ha = I.ha, xa = I.xa;
+  const Ls = Math.hypot(ha, xa), theta = Math.atan(ha / xa) * 180 / Math.PI;
+  const Cs = H * Ls / xa;
+  const Vup1 = H * ha / xa, Vup = nLines * Vup1;
+  const g = geomFound(P.forma, P.d, P.t);
+  const phiR = I.phi * Math.PI / 180;
+  const K0 = 1 - Math.sin(phiR), tanD = Math.tan(2 * phiR / 3);
+  const Ff = 0.5 * K0 * I.gS * P.t * P.t * tanD * g.per;
+  const FSup = (W.G + Ff) / Vup;
+  const Mres = H * Math.abs(T.zR - ha) * (nLines === 2 ? Math.SQRT2 : 1);
+  const Ab = Math.PI * I.dB * I.dB / 4, Wb = I.gHS * Ab * I.tB;
+  const N = Vup1 + Wb, sigB = N / Ab, sigAdm = I.sigAdm * KGCM2_2_KPA;
+  const Kp = Math.pow(Math.tan(Math.PI / 4 + phiR / 2), 2);
+  const Ep = 0.5 * Kp * I.gS * I.tB * I.tB * I.dB, Rfr = N * tanD;
+  const FSsl = (Ep + Rfr) / H;
+  return { nLines, H, Ls, theta, Cs, Vup1, Vup, K0, tanD, Ff, FSup, okUp: FSup >= I.fsMin, Mres, Ab, Wb, N, sigB, sigAdm, okSigB: sigB <= sigAdm, Kp, Ep, Rfr, FSsl, okSl: FSsl >= I.fsMin };
+}
+function longitudinal(I, P, W, nLines, usaP) {
+  const T = tensionLoads(I);
+  const L = { T, nLines, usaP };
+  if (usaP) {
+    L.P = strutCalc(I, T, W, P, nLines);
+    L.SL = sulzberger(I, P.forma, P.d, P.t, W.G, [], L.P.Mres);
+  } else {
+    const Tf = tensionLoads(I, nLines === 2 ? Math.SQRT2 : 1);
+    L.Tf = Tf;
+    L.SL = sulzberger(I, P.forma, P.d, P.t, W.G, Tf.loads);
+    L.CL = concreteChecks(I, P, Tf.H, Tf.M0, W.G);
+    L.tmin = tMin(I, P, Tf.loads);
+  }
+  L.checks = usaP
+    ? [["Arrancamiento por puntal" + (nLines === 2 ? "es" : ""), L.P.okUp], ["Momento residual (Sulzberger)", L.SL.ok], ["Base puntal — tensión en el suelo", L.P.okSigB], ["Base puntal — deslizamiento", L.P.okSl]]
+    : [["Sulzberger (tiro de alambres)", L.SL.ok], ["Empotramiento (tiro de alambres)", L.CL.okV]];
+  return L;
+}
+
+// ---------- Análisis por tipo de poste ----------
+function analyzeWind(P, I, w, Mextra = 0, combine = false) {
+  const W = weights(I, P);
+  const S = sulzberger(I, P.forma, P.d, P.t, W.G, w.loads, Mextra, combine);
+  const Mc = combine ? Math.hypot(w.M0, Mextra) : w.M0 + Mextra;
+  const C = concreteChecks(I, P, w.H, Mc, W.G);
+  return { P, w, W, S, C, tmin: tMin(I, P, w.loads, Mextra, combine),
+    checks: [["Sulzberger (viento)", S.ok], ["Empotramiento poste / H° simple", C.okV], ["Recubrimiento y fondo", C.okRec && C.okFondo], ["Tensión en el suelo", C.okSig]] };
+}
+function compute() {
+  const I = readInputs();
+  const hl = I.Lp - I.le;
+  const Wcerco = trib => I.pesoCerco * KG2KN * trib;
+  const R = { I, posts: [] };
+
+  // Intermedio
+  const Pi = { forma: I.fiForma, d: I.fiD, t: I.fiT, pb: I.piB, ph: I.piH, round: false, le: I.le, Wpost: I.gHA * I.piB * I.piH * I.Lp, Wext: Wcerco(I.sep) };
+  const ri = analyzeWind(Pi, I, windLoads(I, { pb: I.piB, hl, cfPost: I.cfPost, trib: I.sep }));
+  Object.assign(ri, { key: "int", name: "Poste intermedio", sec: `${f(I.piB, 3)} × ${f(I.piH, 3)} m`, sepTxt: `cada ${f(I.sep, 1)} m` });
+  R.posts.push(ri);
+
+  // Refuerzo
+  const Pr = { forma: I.frForma, d: I.frD, t: I.frT, pb: I.prB, ph: I.prH, round: false, le: I.le, Wpost: I.gHA * I.prB * I.prH * I.Lp, Wext: Wcerco(I.sep) };
+  const rr = analyzeWind(Pr, I, windLoads(I, { pb: I.prB, hl, cfPost: I.cfPost, trib: I.sep }));
+  Object.assign(rr, { key: "ref", name: "Poste de refuerzo", sec: `${f(I.prB, 3)} × ${f(I.prH, 3)} m`, sepTxt: `cada ${f(I.sepRef, 0)} m` });
+  rr.L = longitudinal(I, Pr, rr.W, 1, I.usaPuntal);
+  R.posts.push(rr);
+
+  // Esquinero
+  const Pe = { forma: I.feForma, d: I.feD, t: I.feT, pb: I.peB, ph: I.peH, round: false, le: I.le, Wpost: I.gHA * I.peB * I.peH * I.Lp, Wext: Wcerco(I.sep) };
+  const re = analyzeWind(Pe, I, windLoads(I, { pb: I.peB, hl, cfPost: I.cfPost, trib: I.peTrib }));
+  Object.assign(re, { key: "esq", name: "Poste esquinero", sec: `${f(I.peB, 3)} × ${f(I.peH, 3)} m`, sepTxt: "en cambios de dirección" });
+  re.L = longitudinal(I, Pe, re.W, 2, I.usaPuntalE);
+  R.posts.push(re);
+
+  // Portón
+  const hlg = I.pgL - I.pgLe;
+  const Wleaf = I.hgP * KG2KN;
+  const Pg = { forma: I.fgForma, d: I.fgD, t: I.fgT, pb: I.pgD, ph: I.pgD, round: true, le: I.pgLe, Wpost: I.pgPeso * KG2KN * I.pgL, Wext: Wleaf + Wcerco(I.pgTrib) };
+  const cfLeaf = cfMesh(I.hgEps);
+  const wg = windLoads(I, { pb: I.pgD, hl: hlg, cfPost: I.cfWire, trib: I.pgTrib,
+    extra: [{ name: "Hoja del portón (abierta 90°)", A: I.hgEps * I.hgL * I.hgH, Cf: cfLeaf, z: I.hgB + I.hgH / 2 }] });
+  const Mg = I.rueda ? 0 : Wleaf * I.hgL / 2;
+  const rg = analyzeWind(Pg, I, wg, Mg, true);
+  Object.assign(rg, { key: "gate", name: "Poste de portón", sec: `tubo Ø${f(I.pgD * 1000, 1)} mm`, sepTxt: `hoja ${f(I.hgL)} × ${f(I.hgH)} m`, Mg, Wleaf, cfLeaf, hlg });
+  rg.checks[0][0] = "Sulzberger (viento + peso de hoja)";
+  R.posts.push(rg);
+
+  R.posts.forEach(p => { p.allChecks = [...p.checks, ...(p.L ? p.L.checks : [])]; p.ok = p.allChecks.every(c => c[1]); });
+  R.chk = R.posts.flatMap(p => p.allChecks.map(c => [`${p.name} — ${c[0]}`, c[1]]));
+  R.wind = qzCalc(I); R.wind.cf = I.cfMode === "auto" ? cfMesh(I.eps) : I.cfMan; R.hl = hl;
+  R.warn = [];
+  if (I.hMeshBase + I.hMesh > hl + 1e-6) R.warn.push("La altura del tejido supera la altura libre del poste.");
+  if (I.hPuas.some(h => h > hl + 1e-6)) R.warn.push("Algún alambre de púas está por encima de la altura libre del poste.");
+  if (R.posts.some(p => p.P.le > p.P.t)) R.warn.push("Hay un empotramiento de poste mayor que la profundidad de su fundación.");
+  if (I.hgB + I.hgH > hlg + 1e-6) R.warn.push("La hoja del portón supera la altura libre de su poste.");
+  return R;
+}
+
+// ---------- Render ----------
+const tag = ok => `<span class="tag ${ok ? "ok" : "bad"}">${ok ? "VERIFICA" : "NO VERIFICA"}</span>`;
+const fTxt = P => `${P.forma === "circ" ? "Ø" : "□"}${f(P.d)} × ${f(P.t)} m`;
+function tableLoads(w) {
+  return `<div class="scroll"><table><tr><th>Elemento</th><th>Af (m²)</th><th>Cf</th><th>F (kN)</th><th>z (m)</th><th>F·z (kN·m)</th></tr>` +
+    w.loads.map(l => `<tr><td>${l.name}</td><td class="n">${f(l.A, 3)}</td><td class="n">${f(l.Cf, 2)}</td><td class="n">${f(l.F, 3)}</td><td class="n">${f(l.z, 2)}</td><td class="n">${f(l.F * l.z, 3)}</td></tr>`).join("") +
+    `<tr><th>Total</th><td></td><td></td><th class="n">${f(w.H, 3)}</th><th class="n">${f(w.zR, 2)}</th><th class="n">${f(w.M0, 3)}</th></tr></table></div>`;
+}
+function tableSulz(S, W, title) {
+  return `<h3>${title}</h3><div class="scroll"><table>
+  <tr><td>Peso propio G (bloque + poste + cargas)</td><td class="n">${f(W.G, 2)} kN</td></tr>
+  <tr><td>Lado cuadrado equivalente a</td><td class="n">${f(S.a, 3)} m</td></tr>
+  <tr><td>Ct = C·t/2 &nbsp;/&nbsp; Cb</td><td class="n">${f(S.Ct / KGCM3_2_KNM3, 2)} / ${f(S.Cb / KGCM3_2_KNM3, 2)} kg/cm³</td></tr>
+  <tr><td>Momento de encastramiento lateral Ms</td><td class="n">${f(S.Ms, 3)} kN·m</td></tr>
+  <tr><td>Momento de fondo Mb (contacto ${S.contacto})</td><td class="n">${f(S.Mb, 3)} kN·m</td></tr>
+  ${S.Mextra ? `<tr><td>Momento por fuerzas Σ F·(z + 2t/3)</td><td class="n">${f(S.MvF, 3)} kN·m</td></tr><tr><td>Momento adicional ${S.combine ? "(perpendicular, se combina √(M₁²+M₂²))" : ""}</td><td class="n">${f(S.Mextra, 3)} kN·m</td></tr>` : ""}
+  <tr><td>Momento de vuelco Mv</td><td class="n">${f(S.Mv, 3)} kN·m</td></tr>
+  <tr><td>Ms/Mb → coeficiente s</td><td class="n">${f(S.r, 2)} → ${f(S.s, 3)}</td></tr>
+  <tr><td>Ms + Mb ≥ s·Mv</td><td class="n">${f(S.Mr, 3)} ≥ ${f(S.s * S.Mv, 3)} &nbsp; ${tag(S.ok)}</td></tr>
+  <tr><td>Coef. de seguridad real (Ms+Mb)/Mv</td><td class="n">${f(S.FS, 2)}</td></tr>
+  </table></div>`;
+}
+function tableConc(C) {
+  return `<h3>Hormigón simple y suelo</h3><div class="scroll"><table>
+  <tr><td>Excentricidad de la carga e = M/H</td><td class="n">${f(C.e, 2)} m</td></tr>
+  <tr><td>Vn = 0,85·f'c·b·le/(1+3,6·e/le)</td><td class="n">${f(C.Vn, 2)} kN</td></tr>
+  <tr><td>φ·Vn ≥ Vu = γW·H</td><td class="n">${f(C.phi * C.Vn, 2)} ≥ ${f(C.Vu, 2)} kN &nbsp; ${tag(C.okV)}</td></tr>
+  <tr><td>Recubrimiento lateral mínimo del poste</td><td class="n">${f(C.rec, 3)} m &nbsp; ${tag(C.okRec)}</td></tr>
+  <tr><td>Hormigón bajo el poste (t − le)</td><td class="n">${f(C.fondo, 3)} m &nbsp; ${tag(C.okFondo)}</td></tr>
+  <tr><td>Tensión en el suelo σ = G/A ≤ σadm</td><td class="n">${f(C.sig, 1)} ≤ ${f(C.sigAdm, 1)} kN/m² &nbsp; ${tag(C.okSig)}</td></tr>
+  </table></div>`;
+}
+function htmlLong(I, L, W) {
+  const T = L.T;
+  let s = `<h3>Tiro de alambres${L.nLines === 2 ? " (por línea; dos líneas a 90°)" : " desequilibrado"}</h3><div class="scroll"><table><tr><th>Alambre</th><th>T (kN)</th><th>z (m)</th></tr>` +
+    T.loads.map(l => `<tr><td>${l.name}</td><td class="n">${f(l.F, 2)}</td><td class="n">${f(l.z, 2)}</td></tr>`).join("") +
+    `<tr><th>Total H por línea</th><th class="n">${f(T.H, 2)}</th><th class="n">${f(T.zR, 2)}</th></tr></table></div>`;
+  if (L.usaP) {
+    const P = L.P;
+    s += `<h3>Puntal${L.nLines === 2 ? "es" : ""} y arrancamiento</h3><div class="scroll"><table>
+    <tr><td>Longitud teórica del puntal / ángulo</td><td class="n">${f(P.Ls, 2)} m / ${f(P.theta, 1)}°</td></tr>
+    <tr><td>Compresión en cada puntal C = H·L/x</td><td class="n">${f(P.Cs, 2)} kN</td></tr>
+    <tr><td>Arrancamiento en el poste Vup = ${L.nLines === 2 ? "2·" : ""}H·ha/x</td><td class="n">${f(P.Vup, 2)} kN</td></tr>
+    <tr><td>Fricción lateral Ff = ½·K0·γs·t²·tgδ·perímetro</td><td class="n">${f(P.Ff, 2)} kN</td></tr>
+    <tr><td>FS arrancamiento (G + Ff)/Vup ≥ ${f(I.fsMin, 1)}</td><td class="n">${f(P.FSup, 2)} &nbsp; ${tag(P.okUp)}</td></tr>
+    <tr><td>Momento residual H·|zR − ha|${L.nLines === 2 ? "·√2" : ""}</td><td class="n">${f(P.Mres, 3)} kN·m</td></tr>
+    <tr><td>Sulzberger con momento residual</td><td class="n">${f(L.SL.Mr, 3)} ≥ ${f(L.SL.s * L.SL.Mv, 3)} &nbsp; ${tag(L.SL.ok)}</td></tr>
+    </table></div>
+    <h3>Base de cada puntal Ø${f(I.dB)} × ${f(I.tB)} m</h3><div class="scroll"><table>
+    <tr><td>Carga vertical N = H·ha/x + peso base</td><td class="n">${f(P.N, 2)} kN</td></tr>
+    <tr><td>σ = N/A ≤ σadm</td><td class="n">${f(P.sigB, 1)} ≤ ${f(P.sigAdm, 1)} kN/m² &nbsp; ${tag(P.okSigB)}</td></tr>
+    <tr><td>Empuje pasivo Ep = ½·Kp·γs·tB²·Ø (Kp = ${f(P.Kp, 2)})</td><td class="n">${f(P.Ep, 2)} kN</td></tr>
+    <tr><td>Rozamiento en la base N·tgδ</td><td class="n">${f(P.Rfr, 2)} kN</td></tr>
+    <tr><td>FS deslizamiento (Ep + N·tgδ)/H ≥ ${f(I.fsMin, 1)}</td><td class="n">${f(P.FSsl, 2)} &nbsp; ${tag(P.okSl)}</td></tr>
+    </table></div>`;
+  } else {
+    s += tableSulz(L.SL, W, `Sulzberger — tiro tomado por la fundación${L.nLines === 2 ? " (resultante √2·H en la diagonal)" : ""}`);
+    s += `<p class="hint">Profundidad mínima por tiro: <b>${isFinite(L.tmin) ? f(L.tmin) + " m" : "mayor a 3 m"}</b></p>`;
+    s += `<div class="scroll"><table><tr><td>Empotramiento φVn ≥ Vu (tiro)</td><td class="n">${f(L.CL.phi * L.CL.Vn, 2)} ≥ ${f(L.CL.Vu, 2)} kN &nbsp; ${tag(L.CL.okV)}</td></tr></table></div>`;
+  }
+  return s;
+}
+let currentTab = "int";
+function renderPost(R, p) {
+  const I = R.I;
+  let s = `<h2>${p.name} — ${p.sec} (${p.sepTxt})</h2>`;
+  if (p.key === "esq") s += `<p class="hint">Viento: ancho de influencia ${f(I.peTrib, 1)} m. Tiro permanente de las dos líneas del cerco a 90°.</p>`;
+  if (p.key === "gate") s += `<p class="hint">Hoja abierta a 90° con viento normal a ella (Cf = ${f(p.cfLeaf, 2)}), más el momento por peso de la hoja en voladizo M = P·L/2 = ${f(p.Wleaf, 2)}·${f(I.hgL, 2)}/2 = ${f(p.Mg, 3)} kN·m${I.rueda ? " (anulado: hoja con rueda)" : ""}, en dirección perpendicular. Altura libre del poste ${f(p.hlg)} m.</p>`;
+  s += `<h3>${p.L ? "A) " : ""}Cargas de viento</h3>${tableLoads(p.w)}`;
+  s += tableSulz(p.S, p.W, `Sulzberger — Fundación ${fTxt(p.P)}`);
+  s += `<p class="hint">Profundidad mínima que verifica con ${p.P.forma === "circ" ? "Ø" : "lado"} ${f(p.P.d)} m: <b>${isFinite(p.tmin) ? f(p.tmin) + " m" : "mayor a 3 m — aumentar la sección"}</b></p>`;
+  s += tableConc(p.C);
+  if (p.L) s += `<h3 style="margin-top:16px;color:var(--accent)">B) Tiro de alambres</h3>` + htmlLong(I, p.L, p.W);
+  return s;
+}
+function render(R) {
+  const I = R.I;
+  const allOk = R.chk.every(c => c[1]);
+  $("summary").innerHTML = R.posts.map(p =>
+    `<div class="kpi"><b>${p.name}</b><span>Fund. ${fTxt(p.P)}</span><br>${tag(p.ok)}<br><span>FS Sulzberger ${f(p.S.FS)} · t mín ${isFinite(p.tmin) ? f(p.tmin) + " m" : "> 3 m"}</span></div>`).join("") +
+    `<div class="kpi"><b>Presión de viento</b><span>qz = ${f(R.wind.qz * 1000, 0)} N/m²<br>V = ${f(I.V, 1)} m/s · exposición ${I.expo}</span></div>` +
+    (R.warn.length ? `<div class="kpi"><b><span class="tag warn">Atención</span></b><span>${R.warn.join("<br>")}</span></div>` : "") +
+    `<div class="kpi" style="grid-column:1/-1"><details ${allOk ? "" : "open"}><summary>Detalle de verificaciones (${R.chk.filter(c => c[1]).length}/${R.chk.length} cumplen)</summary><div class="scroll"><table>${R.chk.map(c => `<tr><td>${c[0]}</td><td class="n">${tag(c[1])}</td></tr>`).join("")}</table></div></details><p class="hint">${allOk ? "Todas las verificaciones cumplen." : "Hay verificaciones que no cumplen: aumentar profundidad o sección de la fundación (ver t mínima)."}</p></div>`;
+
+  $("resViento").innerHTML = `<h2>Acción del viento</h2><div class="scroll"><table>
+    <tr><td>Kz (exposición ${I.expo}, z ≤ 5 m)</td><td class="n">${f(R.wind.Kz, 2)}</td></tr>
+    <tr><td>qz = 0,613·Kz·Kzt·Kd·V²·I</td><td class="n">${f(R.wind.qz * 1000, 1)} N/m² = ${f(R.wind.qz, 3)} kN/m²</td></tr>
+    <tr><td>Cf tejido (ε = ${f(I.eps, 2)})</td><td class="n">${f(R.wind.cf, 2)}</td></tr>
+    <tr><td>Altura libre de postes del cerco</td><td class="n">${f(R.hl, 2)} m</td></tr>
+    </table></div><p class="hint">F = qz·G·Cf·Af</p>`;
+
+  $("tabs").innerHTML = R.posts.map(p => `<button data-k="${p.key}" class="${p.key === currentTab ? "on" : ""}">${p.name.replace("Poste ", "").replace(/^./, c => c.toUpperCase())} ${p.ok ? "✓" : "✗"}</button>`).join("");
+  $("tabs").querySelectorAll("button").forEach(b => b.onclick = () => { currentTab = b.dataset.k; render(R); });
+  $("resPost").innerHTML = renderPost(R, R.posts.find(p => p.key === currentTab));
+  $("sketch").innerHTML = sketchSVG(R);
+  $("notas").innerHTML = NOTAS.map(n => `<p>${n}</p>`).join("");
+}
+
+const NOTAS = [
+  "<b>Viento</b> (CIRSOC 102-2005, carteles abiertos y estructuras reticuladas): qz = 0,613·Kz·Kzt·Kd·V²·I [N/m²], con Kz constante para z ≤ 5 m. Fuerza F = qz·G·Cf·Af, siendo Af el área sólida proyectada (tejido: ε·h·s). Cf de superficies abiertas con miembros circulares: ε < 0,1 → 1,2; 0,1–0,3 → 1,3; 0,3–0,7 → 1,5.",
+  "<b>Sulzberger</b>: bloque rígido que gira un ángulo α (tg α = 0,01). Ms = b·t³·Ct·tgα/36; Mb = G·(a/2 − 0,47·√(G/(b·Cb·tgα))) con contacto parcial, o Mb = b·a³·Cb·tgα/12 con contacto total. Ct = C·t/2 (C referido a 2 m). Se exige Ms + Mb ≥ s·Mv, con s entre 1,5 (Ms/Mb ≤ 0,1) y 1,0 (Ms/Mb ≥ 1). Mv = Σ F·(z + 2t/3).",
+  "<b>Fundación circular</b>: se reemplaza por un cuadrado de igual área (a = Ø·√π/2 ≈ 0,886·Ø).",
+  "<b>Hormigón simple</b>: el bloque trabaja como cuerpo rígido comprimido; no requiere armadura. Se verifica la compresión local frente al poste empotrado (expresión PCI para elementos embebidos) con φ = 0,65 y viento mayorado, el recubrimiento lateral alrededor del poste y el espesor bajo el poste.",
+  "<b>Refuerzo</b>: viento con ancho de influencia igual a la separación entre postes. Tiro desequilibrado tomado por puntal: C = H·L/x, arrancamiento Vup = H·ha/x, resistido por peso propio y fricción lateral (K0 = 1 − sen φ, δ = 2φ/3). Base del puntal a tensión en el suelo y deslizamiento (empuje pasivo + rozamiento).",
+  "<b>Esquinero</b>: recibe el tiro permanente de las dos líneas a 90°. Con puntales, cada uno toma el tiro de su línea y el arrancamiento se suma (2·H·ha/x); el momento residual se combina como √2. Sin puntales, la fundación toma la resultante √2·H.",
+  "<b>Portón</b>: hoja abierta a 90° con viento normal a su plano, más el momento por peso de la hoja en voladizo (P·L/2) en dirección perpendicular; se combinan vectorialmente Mv = √(Mv,viento² + Mpeso²). El peso de la hoja se suma a las cargas verticales. Con rueda de apoyo se anula el momento por peso.",
+  "Los coeficientes de suelo precargados son orientativos. Se recomienda reemplazarlos por los del estudio geotécnico del sitio."
+];
+
+// ---------- Esquema SVG (colores explícitos, escala automática) ----------
+function sketchSVG(R) {
+  const I = R.I;
+  const [pi, pr, pe, pg] = R.posts;
+  const W = 1200, H = 480, top = 70, bot = 52;
+  const maxH = Math.max(R.hl, pg.hlg, I.hMeshBase + I.hMesh, ...I.hPuas, I.hgB + I.hgH);
+  const maxD = Math.max(I.fiT, I.frT, I.feT, I.fgT, (I.usaPuntal || I.usaPuntalE) ? I.tB : 0);
+  const sc = (H - top - bot) / (maxH + maxD);
+  const gy = top + maxH * sc;
+  const Y = m => gy - m * sc;
+  const xs = { int: 150, ref: 450, esq: 790, gate: 960 };
+  const strutPx = Math.min(I.xa * sc, 150);
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="Arial, Helvetica, sans-serif">`;
+  s += `<defs><pattern id="mesh" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M0 6 L6 0 L12 6 L6 12 Z" fill="none" stroke="#9aa6b4" stroke-width="0.8"/></pattern>
+        <pattern id="soil" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="#d8c9ad" stroke-width="2"/></pattern>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#1f5fa8"/></marker></defs>`;
+  s += `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
+  s += `<rect x="0" y="${gy}" width="${W}" height="${H - gy}" fill="#f3ead9"/><rect x="0" y="${gy}" width="${W}" height="${H - gy}" fill="url(#soil)"/>`;
+  s += `<line x1="0" y1="${gy}" x2="${W}" y2="${gy}" stroke="#6b4f2a" stroke-width="2"/>`;
+  s += `<text x="10" y="${gy - 6}" font-size="12" fill="#6b4f2a" font-weight="bold">NTN ±0,00</text>`;
+  // título
+  s += `<text x="${W / 2}" y="22" font-size="13" text-anchor="middle" fill="#333">Intermedios c/ ${f(I.sep, 1)} m · Refuerzo c/ ${f(I.sepRef, 0)} m · Esquineros · Portón — separación horizontal sin escala</text>`;
+  // tejido y púas
+  const meshSeg = (a, b) => {
+    let t = `<rect x="${a}" y="${Y(I.hMeshBase + I.hMesh)}" width="${b - a}" height="${I.hMesh * sc}" fill="url(#mesh)" stroke="#7a8796" stroke-width="0.8"/>`;
+    I.hPuas.forEach(h => t += `<line x1="${a}" y1="${Y(h)}" x2="${b}" y2="${Y(h)}" stroke="#555" stroke-dasharray="3 3" stroke-width="1.2"/>`);
+    return t;
+  };
+  s += meshSeg(xs.int - 90, xs.ref) + meshSeg(xs.ref, xs.esq);
+  // cortes
+  s += `<text x="${(xs.int + xs.ref) / 2}" y="${Y(I.hMeshBase + I.hMesh / 2) + 4}" font-size="11" text-anchor="middle" fill="#55606e" stroke="#fff" stroke-width="3" paint-order="stroke">tejido h=${f(I.hMesh)} m</text>`;
+
+  function found(x, P) {
+    const fw = P.d * sc;
+    return `<rect x="${x - fw / 2}" y="${gy}" width="${fw}" height="${P.t * sc}" fill="#c9ccd2" stroke="#555" stroke-width="1"/>` +
+      `<line x1="${x + fw / 2 + 8}" y1="${gy}" x2="${x + fw / 2 + 8}" y2="${gy + P.t * sc}" stroke="#1f5fa8" marker-start="url(#arr)" marker-end="url(#arr)"/>` +
+      `<text x="${x + fw / 2 + 13}" y="${gy + P.t * sc / 2 + 4}" font-size="11" fill="#1f5fa8">t=${f(P.t)}</text>` +
+      `<text x="${x}" y="${gy + P.t * sc + 16}" font-size="11" text-anchor="middle" fill="#1f5fa8">${P.forma === "circ" ? "Ø" : "□"}${f(P.d)} m</text>`;
+  }
+  function post(x, P, hl, label, round) {
+    const pw = Math.max(P.pb * sc, 6);
+    return found(x, P) +
+      `<rect x="${x - pw / 2}" y="${Y(hl)}" width="${pw}" height="${(hl + P.le) * sc}" fill="${round ? "#6d7580" : "#8f96a3"}" stroke="#333" stroke-width="1"/>` +
+      `<text x="${x}" y="${Y(hl) - 10}" font-size="12.5" font-weight="bold" text-anchor="middle" fill="#222">${label}</text>`;
+  }
+  function strut(x, dir) {
+    const xb = x + dir * strutPx;
+    const bw = I.dB * sc;
+    return `<line x1="${x}" y1="${Y(I.ha)}" x2="${xb}" y2="${gy + 3}" stroke="#8f96a3" stroke-width="6" stroke-linecap="round"/>` +
+      `<rect x="${xb - bw / 2}" y="${gy}" width="${bw}" height="${I.tB * sc}" fill="#c9ccd2" stroke="#555"/>`;
+  }
+  // refuerzo con puntales a ambos lados
+  if (I.usaPuntal) {
+    s += strut(xs.ref, -1) + strut(xs.ref, 1);
+    s += `<text x="${xs.ref + strutPx}" y="${gy + I.tB * sc + 16}" font-size="10.5" text-anchor="middle" fill="#1f5fa8">base puntal Ø${f(I.dB)}×${f(I.tB)}</text>`;
+  }
+  if (I.usaPuntalE) {
+    s += strut(xs.esq, -1);
+    s += `<text x="${xs.esq + 10}" y="${Y(I.ha) + 4}" font-size="10.5" fill="#55606e">+ 2º puntal a 90°</text>`;
+  }
+  s += post(xs.int, pi.P, R.hl, "Intermedio") + post(xs.ref, pr.P, R.hl, "Refuerzo") + post(xs.esq, pe.P, R.hl, "Esquinero");
+  // portón
+  const pgw = Math.max(I.pgD * sc, 6);
+  const leafW = Math.min(I.hgL * sc, W - xs.gate - 30);
+  const lx = xs.gate + pgw / 2 + 4;
+  s += `<rect x="${lx}" y="${Y(I.hgB + I.hgH)}" width="${leafW}" height="${I.hgH * sc}" fill="url(#mesh)" stroke="#444" stroke-width="2.5"/>`;
+  s += `<line x1="${lx}" y1="${Y(I.hgB + I.hgH)}" x2="${lx + leafW}" y2="${Y(I.hgB)}" stroke="#444" stroke-width="1.5"/>`;
+  s += `<text x="${lx + leafW / 2}" y="${Y(I.hgB + I.hgH) - 6}" font-size="11" text-anchor="middle" fill="#333">hoja ${f(I.hgL)} × ${f(I.hgH)} m${I.hgL * sc > leafW + 1 ? " (cortada)" : ""}</text>`;
+  s += post(xs.gate, pg.P, pg.hlg, "Portón", true);
+  // cota altura libre
+  s += `<line x1="40" y1="${Y(R.hl)}" x2="40" y2="${gy}" stroke="#1f5fa8" marker-start="url(#arr)" marker-end="url(#arr)"/>`;
+  s += `<line x1="34" y1="${Y(R.hl)}" x2="${xs.int - 10}" y2="${Y(R.hl)}" stroke="#1f5fa8" stroke-dasharray="2 3"/>`;
+  s += `<text x="46" y="${Y(R.hl / 2) - 50}" font-size="11" fill="#1f5fa8" transform="rotate(-90 46 ${Y(R.hl / 2) - 50})" text-anchor="middle">h libre ${f(R.hl)} m</text>`;
+  // viento
+  const zR = pi.w.zR;
+  s += `<g><line x1="${xs.int - 85}" y1="${Y(zR)}" x2="${xs.int - 12}" y2="${Y(zR)}" stroke="#b3261e" stroke-width="2.5"/><path d="M${xs.int - 14} ${Y(zR) - 6} L${xs.int - 2} ${Y(zR)} L${xs.int - 14} ${Y(zR) + 6} Z" fill="#b3261e"/></g>`;
+  s += `<text x="${xs.int - 85}" y="${Y(zR) - 9}" font-size="11" fill="#b3261e" font-weight="bold">Viento H=${f(pi.w.H)} kN</text>`;
+  s += `<text x="${xs.int - 85}" y="${Y(zR) + 17}" font-size="10.5" fill="#b3261e">z=${f(zR)} m</text>`;
+  s += `</svg>`;
+  return s;
+}
+
+// ---------- Memoria Word ----------
+async function svgToPng(svgStr, w, h) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas"); c.width = w * 2; c.height = h * 2;
+      const ctx = c.getContext("2d"); ctx.scale(2, 2); ctx.drawImage(img, 0, 0, w, h);
+      c.toBlob(b => b ? b.arrayBuffer().then(res) : rej(new Error("png")), "image/png");
+    };
+    img.onerror = rej;
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgStr)));
+  });
+}
+
+async function generarWord() {
+  if (typeof docx === "undefined") { $("wordMsg").textContent = "No se pudo cargar la librería docx (verificar lib/docx.iife.js o conexión)."; return; }
+  const btn = $("btnWord"); btn.disabled = true; $("wordMsg").textContent = "Generando…";
+  try {
+    const R = compute(); const I = R.I;
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType, WidthType, ImageRun, ShadingType, Header, Footer, PageNumber, BorderStyle } = docx;
+    const FONT = "Arial";
+    const P = (t, o = {}) => new Paragraph({ spacing: { after: 100 }, alignment: o.align || AlignmentType.JUSTIFIED, children: (Array.isArray(t) ? t : [t]).map(x => typeof x === "string" ? new TextRun({ text: x, font: FONT, size: 21, bold: o.bold, italics: o.it }) : x) });
+    const EQ = t => new Paragraph({ spacing: { after: 80 }, indent: { left: 567 }, children: [new TextRun({ text: t, font: "Cambria Math", size: 21, italics: true })] });
+    const H1 = t => new Paragraph({ heading: HeadingLevel.HEADING_1, spacing: { before: 240, after: 120 }, children: [new TextRun({ text: t, font: FONT, size: 26, bold: true, color: "1F3F6E" })] });
+    const H2 = t => new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 180, after: 100 }, children: [new TextRun({ text: t, font: FONT, size: 22, bold: true, color: "1F5FA8" })] });
+    const B = t => new Paragraph({ bullet: { level: 0 }, spacing: { after: 60 }, children: [new TextRun({ text: t, font: FONT, size: 21 })] });
+    const cell = (t, o = {}) => new TableCell({
+      shading: o.head ? { type: ShadingType.CLEAR, fill: "DCE6F2", color: "auto" } : (o.fill ? { type: ShadingType.CLEAR, fill: o.fill, color: "auto" } : undefined),
+      margins: { top: 40, bottom: 40, left: 80, right: 80 },
+      children: [new Paragraph({ alignment: o.right ? AlignmentType.RIGHT : AlignmentType.LEFT, children: [new TextRun({ text: String(t), font: FONT, size: 19, bold: !!o.head || !!o.bold, color: o.color })] })]
+    });
+    const OK = b => ({ __ok: b });
+    const T = (rows, head, widths) => new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      columnWidths: widths,
+      rows: [
+        ...(head ? [new TableRow({ tableHeader: true, children: head.map(h => cell(h, { head: true })) })] : []),
+        ...rows.map(r => new TableRow({ children: r.map((c, i) => c && typeof c === "object" && c.__ok !== undefined
+          ? cell(c.__ok ? "VERIFICA" : "NO VERIFICA", { bold: true, color: c.__ok ? "1D7A3E" : "B3261E", fill: c.__ok ? "E3F4E9" : "FBE6E4" })
+          : cell(c, { right: i > 0 && /^[\d\-−,.≥≤ ]/.test(String(c)) })) }))
+      ]
+    });
+    const KV = rows => T(rows, ["Concepto", "Valor"], [6500, 3000]);
+    const sp = () => new Paragraph({ text: "" });
+    const forma = Pp => `${Pp.forma === "circ" ? "circular Ø" : "cuadrada de lado "}${f(Pp.d)} m, profundidad ${f(Pp.t)} m`;
+
+    const loadsTable = w => T([
+      ...w.loads.map(l => [l.name, f(l.A, 3), f(l.Cf, 2), f(l.F, 3), f(l.z, 2), f(l.F * l.z, 3)]),
+      ["Total", "", "", f(w.H, 3), f(w.zR, 2), f(w.M0, 3)]
+    ], ["Elemento", "Af (m²)", "Cf", "F (kN)", "z (m)", "F·z (kN·m)"]);
+    const sulzRows = S => [
+      ["Lado cuadrado equivalente a = b", f(S.a, 3) + " m"],
+      ["Ct = C·t/2", f(S.Ct / KGCM3_2_KNM3, 2) + " kg/cm³ = " + f(S.Ct, 0) + " kN/m³"],
+      ["Cb", f(S.Cb / KGCM3_2_KNM3, 2) + " kg/cm³"],
+      ["Ms = b·t³·Ct·tgα/36", f(S.Ms, 3) + " kN·m"],
+      [`Mb (contacto ${S.contacto}${S.contacto === "parcial" ? ", x = " + f(S.x, 3) + " m" : ""})`, f(S.Mb, 3) + " kN·m"],
+      ...(S.Mextra ? [["Momento por fuerzas Σ F·(z + 2t/3)", f(S.MvF, 3) + " kN·m"], ["Momento adicional" + (S.combine ? " (perpendicular)" : ""), f(S.Mextra, 3) + " kN·m"]] : []),
+      ["Mv" + (S.combine && S.Mextra ? " = √(M₁² + M₂²)" : ""), f(S.Mv, 3) + " kN·m"],
+      ["Ms / Mb", f(S.r, 2)],
+      ["Coeficiente s (tabla de Sulzberger)", f(S.s, 3)],
+      ["Ms + Mb", f(S.Mr, 3) + " kN·m"],
+      ["s · Mv", f(S.s * S.Mv, 3) + " kN·m"],
+      ["Coeficiente de seguridad (Ms+Mb)/Mv", f(S.FS, 2)],
+      ["Ms + Mb ≥ s·Mv", OK(S.ok)]
+    ];
+    const sulzTable = (S, W) => KV([
+      ["Peso del bloque de hormigón", f(W.Wblock, 2) + " kN"],
+      ["Peso del poste", f(W.Wpost, 2) + " kN"],
+      ["Cargas verticales adicionales (cerco / hoja)", f(W.Wext, 2) + " kN"],
+      ["G total", f(W.G, 2) + " kN"],
+      ...sulzRows(S)
+    ]);
+    const concTable = C => KV([
+      ["Excentricidad e = M/H", f(C.e, 2) + " m"],
+      ["Vn = 0,85·f'c·b·le / (1 + 3,6·e/le)", f(C.Vn, 2) + " kN"],
+      ["φ·Vn (φ = 0,65)", f(C.phi * C.Vn, 2) + " kN"],
+      ["Vu = " + f(I.gW, 1) + "·H", f(C.Vu, 2) + " kN"],
+      ["φ·Vn ≥ Vu", OK(C.okV)],
+      ["Recubrimiento lateral del poste (mín. " + f(I.recMin) + " m)", f(C.rec, 3) + " m"],
+      ["Recubrimiento lateral", OK(C.okRec)],
+      ["Hormigón bajo el poste t − le (mín. " + f(I.fondoMin) + " m)", f(C.fondo, 3) + " m"],
+      ["Espesor de fondo", OK(C.okFondo)],
+      ["σ = G/A", f(C.sig, 1) + " kN/m²"],
+      ["σadm", f(C.sigAdm, 1) + " kN/m²"],
+      ["σ ≤ σadm", OK(C.okSig)]
+    ]);
+    const longBlock = (L, n) => {
+      const out = [];
+      out.push(T([...L.T.loads.map(l => [l.name, f(l.F, 2), f(l.z, 2)]), ["Total H por línea / altura resultante", f(L.T.H, 2), f(L.T.zR, 2)]], ["Alambre", "T (kN)", "z (m)"]));
+      if (L.usaP) {
+        const Pp = L.P;
+        out.push(P(`El tiro horizontal de ${L.nLines === 2 ? "cada línea es tomado por su puntal" : "la línea es tomado por un puntal"}, fijado a ${f(I.ha)} m de altura y con su base a ${f(I.xa)} m del poste. La componente vertical produce arrancamiento en el poste, resistido por su peso propio y la fricción lateral del suelo.`));
+        out.push(EQ(`C = H · L / x ;  Vup = ${L.nLines === 2 ? "2 · " : ""}H · ha / x ;  Ff = ½ · K0 · γs · t² · tg δ · perímetro`));
+        out.push(KV([
+          ["Longitud del puntal L / ángulo", f(Pp.Ls, 2) + " m / " + f(Pp.theta, 1) + "°"],
+          ["Compresión en cada puntal C", f(Pp.Cs, 2) + " kN"],
+          ["Arrancamiento total Vup", f(Pp.Vup, 2) + " kN"],
+          ["K0 = 1 − sen φ  /  tg δ (δ = 2φ/3)", f(Pp.K0, 3) + " / " + f(Pp.tanD, 3)],
+          ["Fricción lateral Ff", f(Pp.Ff, 2) + " kN"],
+          ["FS = (G + Ff) / Vup", f(Pp.FSup, 2)],
+          ["FS ≥ " + f(I.fsMin, 1), OK(Pp.okUp)],
+          ["Momento residual H·|zR − ha|" + (L.nLines === 2 ? "·√2" : ""), f(Pp.Mres, 3) + " kN·m"],
+          ["Sulzberger: Ms + Mb", f(L.SL.Mr, 3) + " kN·m"],
+          ["s · Mv", f(L.SL.s * L.SL.Mv, 3) + " kN·m"],
+          ["Ms + Mb ≥ s·Mv", OK(L.SL.ok)]
+        ]));
+        out.push(H2(`${n} Base de puntal Ø${f(I.dB)} × ${f(I.tB)} m`));
+        out.push(EQ("σ = (H·ha/x + Wb) / A ≤ σadm ;  FS = (Ep + N · tg δ) / H ;  Ep = ½ · Kp · γs · tB² · Ø"));
+        out.push(KV([
+          ["Peso de la base Wb", f(Pp.Wb, 2) + " kN"],
+          ["Carga vertical N", f(Pp.N, 2) + " kN"],
+          ["σ = N / A", f(Pp.sigB, 1) + " kN/m²"],
+          ["σadm", f(Pp.sigAdm, 1) + " kN/m²"],
+          ["σ ≤ σadm", OK(Pp.okSigB)],
+          ["Kp = tg²(45° + φ/2)", f(Pp.Kp, 2)],
+          ["Empuje pasivo Ep", f(Pp.Ep, 2) + " kN"],
+          ["Rozamiento N · tg δ", f(Pp.Rfr, 2) + " kN"],
+          ["FS deslizamiento", f(Pp.FSsl, 2)],
+          ["FS ≥ " + f(I.fsMin, 1), OK(Pp.okSl)]
+        ]));
+      } else {
+        out.push(P(`Sin puntales, el tiro es tomado por la fundación${L.nLines === 2 ? " (resultante √2·H en la dirección de la bisectriz)" : ""}, verificándose con el método de Sulzberger.`));
+        out.push(KV(sulzRows(L.SL)));
+        out.push(P(`Profundidad mínima por tiro: ${isFinite(L.tmin) ? f(L.tmin) + " m" : "mayor a 3,00 m"}.`, { it: true }));
+        out.push(KV([["φ·Vn ≥ Vu (tiro)", f(L.CL.phi * L.CL.Vn, 2) + " ≥ " + f(L.CL.Vu, 2) + " kN"], ["Empotramiento", OK(L.CL.okV)]]));
+      }
+      return out;
+    };
+
+    const png = await svgToPng(sketchSVG(R), 1200, 480).catch(() => null);
+    const fechaTxt = I.fecha ? I.fecha.split("-").reverse().join("/") : new Date().toLocaleDateString("es-AR");
+    const [pi, pr, pe, pg] = R.posts;
+    const ch = [];
+
+    ch.push(new Paragraph({ spacing: { before: 1800, after: 200 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "MEMORIA DE CÁLCULO", font: FONT, size: 40, bold: true, color: "1F3F6E" })] }));
+    ch.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: "FUNDACIONES DE POSTES DE CERCO PERIMETRAL", font: FONT, size: 28, bold: true })] }));
+    ch.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 600 }, children: [new TextRun({ text: "Postes intermedios, de refuerzo, esquineros y de portón — Hormigón simple", font: FONT, size: 24 })] }));
+    ch.push(T([["Proyecto", I.proj || "—"], ["Ubicación", I.ubic || "—"], ["Plano de referencia", I.docref || "—"], ["Elaboró", I.autor || "—"], ["Fecha", fechaTxt]], null, [3000, 6500]));
+    ch.push(new Paragraph({ pageBreakBefore: true, children: [] }));
+
+    ch.push(H1("1. Objeto"));
+    ch.push(P(`La presente memoria tiene por objeto verificar las fundaciones de hormigón simple (sin armadura) de los postes del cerco perimetral del proyecto ${I.proj || ""}: postes intermedios (cada ${f(I.sep, 1)} m), postes de refuerzo (cada ${f(I.sepRef, 0)} m), postes esquineros y postes de portón.`));
+    ch.push(H1("2. Normas y bibliografía"));
+    ["CIRSOC 102-2005 — Reglamento argentino de acción del viento sobre las construcciones.",
+     "CIRSOC 201-2005 — Reglamento argentino de estructuras de hormigón (cap. 22, hormigón estructural simple).",
+     "Método de Sulzberger para fundaciones monobloque de postes (práctica usual en fundaciones de postes, AEA 95301).",
+     "PCI Design Handbook — capacidad de elementos embebidos en hormigón.",
+     `Plano ${I.docref || ""} — Detalles de postes del cerco y portón (referencial).`].forEach(t => ch.push(B(t)));
+
+    ch.push(H1("3. Descripción del cerco"));
+    ch.push(P(`El cerco está formado por tejido romboidal de alambre galvanizado de ${f(I.hMesh)} m de altura (borde inferior a ${f(I.hMeshBase)} m del NTN), alambres tensores lisos a ${I.hTens.map(h => f(h)).join("; ")} m y ${I.hPuas.length} alambres de púas a ${I.hPuas.map(h => f(h)).join("; ")} m. Los postes de cerco son premoldeados de HºAº de ${f(I.Lp)} m de longitud con ${f(I.le)} m de empotramiento (altura libre ${f(R.hl)} m). Los postes de portón son de tubo estructural Ø${f(I.pgD * 1000, 1)} mm, de ${f(I.pgL)} m de longitud con ${f(I.pgLe)} m de empotramiento, y soportan hojas de ${f(I.hgL)} × ${f(I.hgH)} m.`));
+    ch.push(T(R.posts.map(p => [p.name, p.sec, forma(p.P), p.sepTxt]).concat((I.usaPuntal || I.usaPuntalE) ? [["Base de puntal", "—", `circular Ø${f(I.dB)} m, profundidad ${f(I.tB)} m`, "refuerzo / esquinero"]] : []),
+      ["Elemento", "Sección", "Fundación", "Ubicación"]));
+    if (png) {
+      ch.push(sp());
+      ch.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ data: png, transformation: { width: 620, height: 248 } })] }));
+      ch.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Figura 1 — Esquema de postes y fundaciones (alturas a escala, separación horizontal sin escala).", font: FONT, size: 18, italics: true })] }));
+    }
+    ch.push(H1("4. Materiales"));
+    ch.push(B(`Hormigón de fundación: H-${f(I.fc, 0)} simple, sin armadura (f'c = ${f(I.fc, 0)} MPa), γ = ${f(I.gHS, 1)} kN/m³.`));
+    ch.push(B(`Postes de cerco: premoldeados de HºAº, γ = ${f(I.gHA, 1)} kN/m³.`));
+    ch.push(B(`Postes de portón: tubo de acero, ${f(I.pgPeso, 1)} kg/m. Hoja del portón: ${f(I.hgP, 0)} kg.`));
+    ch.push(B(`Peso del tejido y alambres: ${f(I.pesoCerco, 1)} kg/m.`));
+
+    ch.push(H1("5. Parámetros del suelo"));
+    ch.push(P(`Suelo adoptado: ${I.soilTxt}.`));
+    ch.push(KV([
+      ["Coeficiente de compresibilidad a 2 m, C", f(I.C2, 2) + " kg/cm³"],
+      ["Relación Cb/Ct (fondo / lateral)", f(I.cbF, 2)],
+      ["Tensión admisible σadm", f(I.sigAdm, 2) + " kg/cm² = " + f(I.sigAdm * KGCM2_2_KPA, 1) + " kN/m²"],
+      ["Peso unitario γs", f(I.gS, 1) + " kN/m³"],
+      ["Ángulo de fricción interna φ", f(I.phi, 0) + "°"],
+      ["Giro admisible tg α", f(I.tanA, 3)]
+    ]));
+
+    ch.push(H1("6. Acción del viento"));
+    ch.push(P("Se aplica el procedimiento de CIRSOC 102-2005 para carteles abiertos y estructuras reticuladas, considerando el tejido como superficie abierta con relación de solidez ε. Para alturas menores a 5 m el coeficiente de exposición Kz es constante."));
+    ch.push(EQ("qz = 0,613 · Kz · Kzt · Kd · V² · I   [N/m²]"));
+    ch.push(EQ("F = qz · G · Cf · Af"));
+    ch.push(KV([
+      ["Velocidad básica V", f(I.V, 1) + " m/s"], ["Categoría de exposición", I.expo], ["Kz (z ≤ 5 m)", f(R.wind.Kz, 2)],
+      ["Kzt", f(I.Kzt, 2)], ["Kd", f(I.Kd, 2)], ["Factor de importancia I", I.catTxt], ["Factor de ráfaga G", f(I.Gf, 2)],
+      ["Presión dinámica qz", f(R.wind.qz * 1000, 1) + " N/m² = " + f(R.wind.qz, 3) + " kN/m²"],
+      ["Relación de solidez del tejido ε", f(I.eps, 2)],
+      ["Cf tejido", f(R.wind.cf, 2) + (I.cfMode === "auto" ? " (miembros circulares, según ε)" : " (adoptado)")],
+      ["Cf poste rectangular / Cf circular", f(I.cfPost, 2) + " / " + f(I.cfWire, 2)]
+    ]));
+
+    ch.push(H1("7. Método de verificación"));
+    ch.push(H2("7.1 Método de Sulzberger"));
+    ch.push(P("La fundación se considera un bloque rígido que, bajo el momento de vuelco, gira un ángulo α alrededor de un punto ubicado a 2/3 de la profundidad. La resistencia se compone del momento de encastramiento lateral (Ms) y del momento de reacción de fondo (Mb). El coeficiente de compresibilidad crece linealmente con la profundidad: Ct = C·t/2 (C referido a 2 m)."));
+    ch.push(EQ("Ms = b · t³ · Ct · tg α / 36"));
+    ch.push(EQ("Mb = G · ( a/2 − 0,47 · √( G / (b · Cb · tg α) ) )   (contacto parcial)"));
+    ch.push(EQ("Mb = b · a³ · Cb · tg α / 12   (contacto total)"));
+    ch.push(EQ("Mv = Σ Fi · ( zi + 2t/3 ) ;   Ms + Mb ≥ s · Mv"));
+    ch.push(P("El coeficiente s varía entre 1,5 (Ms/Mb ≤ 0,1) y 1,0 (Ms/Mb ≥ 1,0). Para fundaciones circulares se adopta un cuadrado de igual área, a = b = Ø·√π/2. Se adopta tg α = " + f(I.tanA, 3) + "."));
+    ch.push(H2("7.2 Hormigón simple"));
+    ch.push(P("El bloque de hormigón simple trabaja como cuerpo rígido, transmitiendo las cargas al suelo por compresión; no requiere armadura. Se verifica la compresión local del hormigón frente al poste empotrado (expresión PCI para elementos embebidos) con φ = 0,65 y viento mayorado por " + f(I.gW, 1) + "; además, el recubrimiento lateral alrededor del poste y el espesor de hormigón bajo su extremo."));
+    ch.push(EQ("Vn = 0,85 · f'c · b · le / (1 + 3,6 · e / le)  ;  φ · Vn ≥ Vu"));
+
+    // 8 Intermedio
+    ch.push(H1("8. Poste intermedio"));
+    ch.push(P(`Poste ${pi.sec}, separación ${f(I.sep, 1)} m. Fundación ${forma(pi.P)}.`));
+    ch.push(H2("8.1 Cargas de viento transversal")); ch.push(loadsTable(pi.w));
+    ch.push(H2("8.2 Verificación al vuelco (Sulzberger)")); ch.push(sulzTable(pi.S, pi.W));
+    ch.push(P(`Profundidad mínima que verifica: ${isFinite(pi.tmin) ? f(pi.tmin) + " m" : "mayor a 3,00 m"}.`, { it: true }));
+    ch.push(H2("8.3 Hormigón simple y suelo")); ch.push(concTable(pi.C));
+
+    // 9 Refuerzo
+    ch.push(H1("9. Poste de refuerzo"));
+    ch.push(P(`Poste ${pr.sec}, cada ${f(I.sepRef, 0)} m. Fundación ${forma(pr.P)}. Se analizan dos estados no simultáneos: (A) viento transversal y (B) tiro longitudinal desequilibrado de los alambres (tensado desde un solo lado o rotura del cerco en el paño adyacente).`));
+    ch.push(H2("9.1 Estado A — Viento transversal")); ch.push(loadsTable(pr.w)); ch.push(sp()); ch.push(sulzTable(pr.S, pr.W));
+    ch.push(P(`Profundidad mínima que verifica por viento: ${isFinite(pr.tmin) ? f(pr.tmin) + " m" : "mayor a 3,00 m"}.`, { it: true }));
+    ch.push(concTable(pr.C));
+    ch.push(H2("9.2 Estado B — Tiro longitudinal")); longBlock(pr.L, "9.3").forEach(x => ch.push(x));
+
+    // 10 Esquinero
+    ch.push(H1("10. Poste esquinero"));
+    ch.push(P(`Poste ${pe.sec}. Fundación ${forma(pe.P)}. El esquinero recibe el viento con un ancho de influencia de ${f(I.peTrib, 1)} m y el tiro permanente de las dos líneas del cerco a 90°, ${I.usaPuntalE ? "tomado por un puntal en cada dirección" : "tomado por la fundación"}. Ambos estados se analizan por separado.`));
+    ch.push(H2("10.1 Estado A — Viento")); ch.push(loadsTable(pe.w)); ch.push(sp()); ch.push(sulzTable(pe.S, pe.W));
+    ch.push(P(`Profundidad mínima que verifica por viento: ${isFinite(pe.tmin) ? f(pe.tmin) + " m" : "mayor a 3,00 m"}.`, { it: true }));
+    ch.push(concTable(pe.C));
+    ch.push(H2("10.2 Estado B — Tiro de las dos líneas")); longBlock(pe.L, "10.3").forEach(x => ch.push(x));
+
+    // 11 Portón
+    ch.push(H1("11. Poste de portón"));
+    ch.push(P(`Poste de tubo Ø${f(I.pgD * 1000, 1)} mm, altura libre ${f(pg.hlg)} m, empotramiento ${f(I.pgLe)} m. Fundación ${forma(pg.P)}. Hoja de ${f(I.hgL)} × ${f(I.hgH)} m y ${f(I.hgP, 0)} kg. Se considera la hoja abierta a 90° con el viento normal a su plano (Cf = ${f(pg.cfLeaf, 2)} para ε = ${f(I.hgEps, 2)}), combinado con el momento por peso propio de la hoja en voladizo, que actúa en dirección perpendicular.`));
+    ch.push(EQ("Mpeso = P · L / 2 ;   Mv = √( Mv,viento² + Mpeso² )"));
+    ch.push(KV([["Peso de la hoja P", f(pg.Wleaf, 2) + " kN"], ["Momento por peso Mpeso" + (I.rueda ? " (hoja con rueda: no se considera)" : ""), f(pg.Mg, 3) + " kN·m"]]));
+    ch.push(H2("11.1 Cargas de viento")); ch.push(loadsTable(pg.w));
+    ch.push(H2("11.2 Verificación al vuelco (Sulzberger)")); ch.push(sulzTable(pg.S, pg.W));
+    ch.push(P(`Profundidad mínima que verifica: ${isFinite(pg.tmin) ? f(pg.tmin) + " m" : "mayor a 3,00 m"}.`, { it: true }));
+    ch.push(H2("11.3 Hormigón simple y suelo")); ch.push(concTable(pg.C));
+
+    ch.push(H1("12. Resumen de verificaciones"));
+    ch.push(T(R.chk.map(c => [c[0], OK(c[1])]), ["Verificación", "Resultado"], [6500, 3000]));
+    ch.push(H1("13. Conclusiones"));
+    R.posts.forEach(p => {
+      const extra = !p.ok && isFinite(p.tmin) && !p.S.ok ? ` Por vuelco se requiere una profundidad mínima de ${f(p.tmin)} m manteniendo la sección en planta.` : "";
+      ch.push(P(`${p.name} — fundación de hormigón simple H-${f(I.fc, 0)} ${forma(p.P)}: ${p.ok ? "VERIFICA" : "NO VERIFICA"}.${extra}`, { bold: true }));
+    });
+    R.warn.forEach(w => ch.push(B("Atención: " + w)));
+    ch.push(P("Las fundaciones se ejecutarán con hormigón simple, sin armadura, colado contra el terreno natural. Los parámetros geotécnicos adoptados deberán confirmarse con el estudio de suelos del sitio; ante suelos de menor calidad se deberá repetir la verificación."));
+
+    const doc = new Document({
+      creator: I.autor || "Calculadora de fundaciones",
+      title: "Memoria de cálculo — Fundaciones de postes de cerco",
+      styles: { default: { document: { run: { font: FONT, size: 21 } } } },
+      sections: [{
+        properties: { page: { margin: { top: 1134, bottom: 1134, left: 1418, right: 1134 } } },
+        headers: { default: new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "999999", space: 2 } }, children: [new TextRun({ text: `${I.proj || ""} — Memoria de cálculo: fundaciones de postes de cerco`, font: FONT, size: 16, color: "666666" })] })] }) },
+        footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ children: ["Página ", PageNumber.CURRENT, " de ", PageNumber.TOTAL_PAGES], font: FONT, size: 16, color: "666666" })] })] }) },
+        children: ch
+      }]
+    });
+    const blob = await Packer.toBlob(doc);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Memoria_Fundaciones_Cerco_${(I.proj || "proyecto").replace(/[^\w\-]+/g, "_")}.docx`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    $("wordMsg").textContent = "Memoria generada.";
+  } catch (e) {
+    console.error(e); $("wordMsg").textContent = "Error al generar: " + e.message;
+  } finally { btn.disabled = false; }
+}
+
+// ---------- Eventos ----------
+function applySoil() {
+  const k = $("soilType").value;
+  if (k === "custom") return;
+  const s = SOILS[k];
+  $("C2").value = s.C2; $("sigAdm").value = s.sig; $("gS").value = s.g; $("phi").value = s.phi;
+}
+function update() { try { render(compute()); } catch (e) { console.error(e); } }
+$("soilType").addEventListener("change", () => { applySoil(); update(); });
+["C2", "sigAdm", "gS", "phi"].forEach(id => $(id).addEventListener("input", () => { $("soilType").value = "custom"; }));
+document.querySelectorAll("#inputs input, #inputs select").forEach(el => el.addEventListener("input", update));
+$("btnWord").addEventListener("click", generarWord);
+$("fecha").value = new Date().toISOString().slice(0, 10);
+update();
+</script>
+</body>
+</html>
