@@ -114,17 +114,24 @@ details summary{cursor:pointer;color:var(--accent);font-weight:600}
       <label>Intermedio: forma<select id="fiForma"><option value="circ">Circular (pozo)</option><option value="cuad">Cuadrada</option></select></label>
       <label>Intermedio: Ø o lado (m)<input id="fiD" type="number" step="0.05" value="0.60"></label>
       <label class="full">Intermedio: profundidad t (m)<input id="fiT" type="number" step="0.05" value="0.65"></label>
+      <label class="full">Intermedio: tipo de fundación<select id="fiTipo"><option value="bloque">Bloque de H° simple (poste embebido)</option><option value="piedra">H° simple sobre cama de piedra (poste apoyado)</option></select></label>
       <label>Refuerzo: forma<select id="frForma"><option value="circ">Circular (pozo)</option><option value="cuad">Cuadrada</option></select></label>
       <label>Refuerzo: Ø o lado (m)<input id="frD" type="number" step="0.05" value="0.60"></label>
       <label class="full">Refuerzo: profundidad t (m)<input id="frT" type="number" step="0.05" value="0.65"></label>
+      <label class="full">Refuerzo: tipo de fundación<select id="frTipo"><option value="bloque">Bloque de H° simple (poste embebido)</option><option value="piedra">H° simple sobre cama de piedra (poste apoyado)</option></select></label>
       <label>Esquinero: forma<select id="feForma"><option value="circ">Circular (pozo)</option><option value="cuad">Cuadrada</option></select></label>
       <label>Esquinero: Ø o lado (m)<input id="feD" type="number" step="0.05" value="0.60"></label>
       <label class="full">Esquinero: profundidad t (m)<input id="feT" type="number" step="0.05" value="0.65"></label>
+      <label class="full">Esquinero: tipo de fundación<select id="feTipo"><option value="bloque">Bloque de H° simple (poste embebido)</option><option value="piedra">H° simple sobre cama de piedra (poste apoyado)</option></select></label>
       <label>Hormigón<select id="fcSel"><option value="15">H-15 (f'c 15 MPa)</option><option value="20" selected>H-20 (f'c 20 MPa)</option><option value="25">H-25 (f'c 25 MPa)</option></select></label>
       <label>Peso esp. hormigón simple (kN/m³)<input id="gHS" type="number" step="0.5" value="23"></label>
       <label>Recubrimiento lateral mínimo (m)<input id="recMin" type="number" step="0.01" value="0.10"></label>
       <label>Espesor mínimo bajo el poste (m)<input id="fondoMin" type="number" step="0.01" value="0.05"></label>
+      <label>Cama de piedra: espesor (m)<input id="ePiedra" type="number" step="0.01" value="0.15"></label>
+      <label>Cama de piedra: σadm de apoyo (kg/cm²)<input id="sigPiedra" type="number" step="0.5" value="3.0"></label>
+      <label>Cama de piedra: peso unitario (kN/m³)<input id="gPiedra" type="number" step="0.5" value="18"></label>
     </div>
+    <p class="hint">Cama de piedra: la piedra (partida o bola, compactada) se coloca en el fondo de la excavación y el poste se apoya sobre ella; luego se hormigona. En ese caso t es la altura del hormigón (desde el NTN hasta la piedra), el poste queda embebido en toda esa altura y la excavación total es t + espesor de la cama. La piedra no aporta resistencia lateral (se desprecia).</p>
   </div>
 
   <div class="card">
@@ -197,6 +204,7 @@ details summary{cursor:pointer;color:var(--accent);font-weight:600}
       <label>Fundación: forma<select id="fgForma"><option value="circ">Circular (pozo)</option><option value="cuad" selected>Cuadrada (dado)</option></select></label>
       <label>Fundación: Ø o lado (m)<input id="fgD" type="number" step="0.05" value="0.60"></label>
       <label>Fundación: profundidad t (m)<input id="fgT" type="number" step="0.05" value="0.90"></label>
+      <label>Portón: tipo de fundación<select id="fgTipo"><option value="bloque">Bloque de H° simple (poste embebido)</option><option value="piedra">H° simple sobre cama de piedra (poste apoyado)</option></select></label>
       <label>Ancho de la hoja (m)<input id="hgL" type="number" step="0.05" value="3.00"></label>
       <label>Altura de la hoja (m)<input id="hgH" type="number" step="0.05" value="2.00"></label>
       <label>Altura borde inferior hoja (m)<input id="hgB" type="number" step="0.01" value="0.05"></label>
@@ -279,10 +287,11 @@ function readInputs() {
   const I = {};
   ["sep","sepRef","hMesh","hMeshBase","dPuas","pesoCerco","piB","piH","prB","prH","peB","peH","Lp","le","gHA","fiD","fiT","frD","frT","feD","feT","gHS","recMin","fondoMin",
    "C2","cbF","sigAdm","gS","phi","tanA","V","Kzt","Kd","Gf","eps","cfMan","cfPost","cfWire","gW","tTens","tPuas","ha","xa","dB","tB","fsMin","peTrib",
-   "pgD","pgPeso","pgL","pgLe","fgD","fgT","hgL","hgH","hgB","hgP","hgEps","pgTrib"].forEach(k => I[k] = v(k));
+   "pgD","pgPeso","pgL","pgLe","fgD","fgT","hgL","hgH","hgB","hgP","hgEps","pgTrib","ePiedra","sigPiedra","gPiedra"].forEach(k => I[k] = v(k));
   I.fc = v("fcSel"); I.Iw = v("cat"); I.expo = $("expo").value; I.cfMode = $("cfMode").value;
   I.catTxt = $("cat").selectedOptions[0].text;
   I.fiForma = $("fiForma").value; I.frForma = $("frForma").value; I.feForma = $("feForma").value; I.fgForma = $("fgForma").value;
+  ["fiTipo","frTipo","feTipo","fgTipo"].forEach(k => I[k] = $(k).value);
   I.hPuas = list("hPuas"); I.hTens = list("hTens");
   I.usaPuntal = $("usaPuntal").value === "si";
   I.usaPuntalE = $("usaPuntalE").value === "si";
@@ -345,7 +354,8 @@ function sulzberger(I, forma, d, t, G, loads, Mextra = 0, combine = false) {
 }
 function tMin(I, P, loads, Mextra = 0, combine = false) {
   for (let t = 0.30; t <= 3.0001; t += 0.05) {
-    if (sulzberger(I, P.forma, P.d, t, weights(I, P, t).G, loads, Mextra, combine).ok) return Math.round(t * 100) / 100;
+    const Pt = { ...P, t, le: P.tipo === "piedra" ? t : P.le };
+    if (sulzberger(I, P.forma, P.d, t, weights(I, Pt, t).G, loads, Mextra, combine).ok) return Math.round(t * 100) / 100;
   }
   return NaN;
 }
@@ -356,8 +366,17 @@ function concreteChecks(I, P, H, M0, G) {
   const phi = 0.65, Vu = I.gW * H;
   const dimP = P.round ? P.pb : (g.circ ? Math.hypot(P.pb, P.ph) : Math.max(P.pb, P.ph));
   const rec = (P.d - dimP) / 2;
+  const sigAdm = I.sigAdm * KGCM2_2_KPA;
+  if (P.tipo === "piedra") {
+    // Poste apoyado sobre la cama de piedra: se verifica el apoyo de la punta y el suelo bajo la piedra
+    const Ap = P.round ? Math.PI * P.pb * P.pb / 4 : P.pb * P.ph;
+    const sigTip = (P.Wpost + P.Wext) / Ap, sigTipAdm = I.sigPiedra * KGCM2_2_KPA;
+    const Wst = I.gPiedra * g.A * I.ePiedra;
+    const sig = (G + Wst) / g.A;
+    return { piedra: true, e, Vn, phi, Vu, okV: phi * Vn >= Vu, rec, okRec: rec >= I.recMin - 1e-9, fondo: I.ePiedra, sigTip, sigTipAdm, okFondo: sigTip <= sigTipAdm, Wst, sig, sigAdm, okSig: sig <= sigAdm };
+  }
   const fondo = P.t - P.le;
-  const sig = G / g.A, sigAdm = I.sigAdm * KGCM2_2_KPA;
+  const sig = G / g.A;
   return { e, Vn, phi, Vu, okV: phi * Vn >= Vu, rec, okRec: rec >= I.recMin - 1e-9, fondo, okFondo: fondo >= I.fondoMin - 1e-9, sig, sigAdm, okSig: sig <= sigAdm };
 }
 
@@ -414,44 +433,48 @@ function analyzeWind(P, I, w, Mextra = 0, combine = false) {
   const Mc = combine ? Math.hypot(w.M0, Mextra) : w.M0 + Mextra;
   const C = concreteChecks(I, P, w.H, Mc, W.G);
   return { P, w, W, S, C, tmin: tMin(I, P, w.loads, Mextra, combine),
-    checks: [["Sulzberger (viento)", S.ok], ["Empotramiento poste / H° simple", C.okV], ["Recubrimiento y fondo", C.okRec && C.okFondo], ["Tensión en el suelo", C.okSig]] };
+    checks: [["Sulzberger (viento)", S.ok], ["Empotramiento poste / H° simple", C.okV], [P.tipo === "piedra" ? "Recubrimiento y apoyo sobre piedra" : "Recubrimiento y fondo", C.okRec && C.okFondo], ["Tensión en el suelo", C.okSig]] };
 }
 function compute() {
   const I = readInputs();
-  const hl = I.Lp - I.le;
   const Wcerco = trib => I.pesoCerco * KG2KN * trib;
   const R = { I, posts: [] };
+  // le efectivo: con cama de piedra el poste se apoya en la piedra y queda embebido en toda la altura de hormigón
+  const leOf = (tipo, t, le) => tipo === "piedra" ? t : le;
+  const lei = leOf(I.fiTipo, I.fiT, I.le), ler = leOf(I.frTipo, I.frT, I.le), lee = leOf(I.feTipo, I.feT, I.le);
+  const hl = I.Lp - lei, hlr = I.Lp - ler, hle = I.Lp - lee;
 
   // Intermedio
-  const Pi = { forma: I.fiForma, d: I.fiD, t: I.fiT, pb: I.piB, ph: I.piH, round: false, le: I.le, Wpost: I.gHA * I.piB * I.piH * I.Lp, Wext: Wcerco(I.sep) };
+  const Pi = { tipo: I.fiTipo, forma: I.fiForma, d: I.fiD, t: I.fiT, pb: I.piB, ph: I.piH, round: false, le: lei, Wpost: I.gHA * I.piB * I.piH * I.Lp, Wext: Wcerco(I.sep) };
   const ri = analyzeWind(Pi, I, windLoads(I, { pb: I.piB, hl, cfPost: I.cfPost, trib: I.sep }));
-  Object.assign(ri, { key: "int", name: "Poste intermedio", sec: `${f(I.piB, 3)} × ${f(I.piH, 3)} m`, sepTxt: `cada ${f(I.sep, 1)} m` });
+  Object.assign(ri, { hl, key: "int", name: "Poste intermedio", sec: `${f(I.piB, 3)} × ${f(I.piH, 3)} m`, sepTxt: `cada ${f(I.sep, 1)} m` });
   R.posts.push(ri);
 
   // Refuerzo
-  const Pr = { forma: I.frForma, d: I.frD, t: I.frT, pb: I.prB, ph: I.prH, round: false, le: I.le, Wpost: I.gHA * I.prB * I.prH * I.Lp, Wext: Wcerco(I.sep) };
-  const rr = analyzeWind(Pr, I, windLoads(I, { pb: I.prB, hl, cfPost: I.cfPost, trib: I.sep }));
-  Object.assign(rr, { key: "ref", name: "Poste de refuerzo", sec: `${f(I.prB, 3)} × ${f(I.prH, 3)} m`, sepTxt: `cada ${f(I.sepRef, 0)} m` });
+  const Pr = { tipo: I.frTipo, forma: I.frForma, d: I.frD, t: I.frT, pb: I.prB, ph: I.prH, round: false, le: ler, Wpost: I.gHA * I.prB * I.prH * I.Lp, Wext: Wcerco(I.sep) };
+  const rr = analyzeWind(Pr, I, windLoads(I, { pb: I.prB, hl: hlr, cfPost: I.cfPost, trib: I.sep }));
+  Object.assign(rr, { hl: hlr, key: "ref", name: "Poste de refuerzo", sec: `${f(I.prB, 3)} × ${f(I.prH, 3)} m`, sepTxt: `cada ${f(I.sepRef, 0)} m` });
   rr.L = longitudinal(I, Pr, rr.W, 1, I.usaPuntal);
   R.posts.push(rr);
 
   // Esquinero
-  const Pe = { forma: I.feForma, d: I.feD, t: I.feT, pb: I.peB, ph: I.peH, round: false, le: I.le, Wpost: I.gHA * I.peB * I.peH * I.Lp, Wext: Wcerco(I.sep) };
-  const re = analyzeWind(Pe, I, windLoads(I, { pb: I.peB, hl, cfPost: I.cfPost, trib: I.peTrib }));
-  Object.assign(re, { key: "esq", name: "Poste esquinero", sec: `${f(I.peB, 3)} × ${f(I.peH, 3)} m`, sepTxt: "en cambios de dirección" });
+  const Pe = { tipo: I.feTipo, forma: I.feForma, d: I.feD, t: I.feT, pb: I.peB, ph: I.peH, round: false, le: lee, Wpost: I.gHA * I.peB * I.peH * I.Lp, Wext: Wcerco(I.sep) };
+  const re = analyzeWind(Pe, I, windLoads(I, { pb: I.peB, hl: hle, cfPost: I.cfPost, trib: I.peTrib }));
+  Object.assign(re, { hl: hle, key: "esq", name: "Poste esquinero", sec: `${f(I.peB, 3)} × ${f(I.peH, 3)} m`, sepTxt: "en cambios de dirección" });
   re.L = longitudinal(I, Pe, re.W, 2, I.usaPuntalE);
   R.posts.push(re);
 
   // Portón
-  const hlg = I.pgL - I.pgLe;
+  const leg = leOf(I.fgTipo, I.fgT, I.pgLe);
+  const hlg = I.pgL - leg;
   const Wleaf = I.hgP * KG2KN;
-  const Pg = { forma: I.fgForma, d: I.fgD, t: I.fgT, pb: I.pgD, ph: I.pgD, round: true, le: I.pgLe, Wpost: I.pgPeso * KG2KN * I.pgL, Wext: Wleaf + Wcerco(I.pgTrib) };
+  const Pg = { tipo: I.fgTipo, forma: I.fgForma, d: I.fgD, t: I.fgT, pb: I.pgD, ph: I.pgD, round: true, le: leg, Wpost: I.pgPeso * KG2KN * I.pgL, Wext: Wleaf + Wcerco(I.pgTrib) };
   const cfLeaf = cfMesh(I.hgEps);
   const wg = windLoads(I, { pb: I.pgD, hl: hlg, cfPost: I.cfWire, trib: I.pgTrib,
     extra: [{ name: "Hoja del portón (abierta 90°)", A: I.hgEps * I.hgL * I.hgH, Cf: cfLeaf, z: I.hgB + I.hgH / 2 }] });
   const Mg = I.rueda ? 0 : Wleaf * I.hgL / 2;
   const rg = analyzeWind(Pg, I, wg, Mg, true);
-  Object.assign(rg, { key: "gate", name: "Poste de portón", sec: `tubo Ø${f(I.pgD * 1000, 1)} mm`, sepTxt: `hoja ${f(I.hgL)} × ${f(I.hgH)} m`, Mg, Wleaf, cfLeaf, hlg });
+  Object.assign(rg, { key: "gate", name: "Poste de portón", sec: `tubo Ø${f(I.pgD * 1000, 1)} mm`, sepTxt: `hoja ${f(I.hgL)} × ${f(I.hgH)} m`, Mg, Wleaf, cfLeaf, hlg, hl: hlg });
   rg.checks[0][0] = "Sulzberger (viento + peso de hoja)";
   R.posts.push(rg);
 
@@ -459,16 +482,17 @@ function compute() {
   R.chk = R.posts.flatMap(p => p.allChecks.map(c => [`${p.name} — ${c[0]}`, c[1]]));
   R.wind = qzCalc(I); R.wind.cf = I.cfMode === "auto" ? cfMesh(I.eps) : I.cfMan; R.hl = hl;
   R.warn = [];
-  if (I.hMeshBase + I.hMesh > hl + 1e-6) R.warn.push("La altura del tejido supera la altura libre del poste.");
-  if (I.hPuas.some(h => h > hl + 1e-6)) R.warn.push("Algún alambre de púas está por encima de la altura libre del poste.");
-  if (R.posts.some(p => p.P.le > p.P.t)) R.warn.push("Hay un empotramiento de poste mayor que la profundidad de su fundación.");
+  const hlMin = Math.min(hl, hlr, hle);
+  if (I.hMeshBase + I.hMesh > hlMin + 1e-6) R.warn.push("La altura del tejido supera la altura libre de algún poste.");
+  if (I.hPuas.some(h => h > hlMin + 1e-6)) R.warn.push("Algún alambre de púas está por encima de la altura libre de algún poste (revisar longitud del poste si se apoya sobre piedra).");
+  if (R.posts.some(p => p.P.tipo !== "piedra" && p.P.le > p.P.t)) R.warn.push("Hay un empotramiento de poste mayor que la profundidad de su fundación.");
   if (I.hgB + I.hgH > hlg + 1e-6) R.warn.push("La hoja del portón supera la altura libre de su poste.");
   return R;
 }
 
 // ---------- Render ----------
 const tag = ok => `<span class="tag ${ok ? "ok" : "bad"}">${ok ? "VERIFICA" : "NO VERIFICA"}</span>`;
-const fTxt = P => `${P.forma === "circ" ? "Ø" : "□"}${f(P.d)} × ${f(P.t)} m`;
+const fTxt = P => `${P.forma === "circ" ? "Ø" : "□"}${f(P.d)} × ${f(P.t)} m${P.tipo === "piedra" ? " + piedra " + f(v("ePiedra")) + " m" : ""}`;
 function tableLoads(w) {
   return `<div class="scroll"><table><tr><th>Elemento</th><th>Af (m²)</th><th>Cf</th><th>F (kN)</th><th>z (m)</th><th>F·z (kN·m)</th></tr>` +
     w.loads.map(l => `<tr><td>${l.name}</td><td class="n">${f(l.A, 3)}</td><td class="n">${f(l.Cf, 2)}</td><td class="n">${f(l.F, 3)}</td><td class="n">${f(l.z, 2)}</td><td class="n">${f(l.F * l.z, 3)}</td></tr>`).join("") +
@@ -494,8 +518,11 @@ function tableConc(C) {
   <tr><td>Vn = 0,85·f'c·b·le/(1+3,6·e/le)</td><td class="n">${f(C.Vn, 2)} kN</td></tr>
   <tr><td>φ·Vn ≥ Vu = γW·H</td><td class="n">${f(C.phi * C.Vn, 2)} ≥ ${f(C.Vu, 2)} kN &nbsp; ${tag(C.okV)}</td></tr>
   <tr><td>Recubrimiento lateral mínimo del poste</td><td class="n">${f(C.rec, 3)} m &nbsp; ${tag(C.okRec)}</td></tr>
-  <tr><td>Hormigón bajo el poste (t − le)</td><td class="n">${f(C.fondo, 3)} m &nbsp; ${tag(C.okFondo)}</td></tr>
-  <tr><td>Tensión en el suelo σ = G/A ≤ σadm</td><td class="n">${f(C.sig, 1)} ≤ ${f(C.sigAdm, 1)} kN/m² &nbsp; ${tag(C.okSig)}</td></tr>
+  ${C.piedra
+    ? `<tr><td>Apoyo del poste sobre la piedra σ = (Wposte + cargas)/Aposte ≤ σadm,piedra</td><td class="n">${f(C.sigTip, 1)} ≤ ${f(C.sigTipAdm, 1)} kN/m² &nbsp; ${tag(C.okFondo)}</td></tr>
+       <tr><td>Tensión en el suelo bajo la cama σ = (G + Wpiedra)/A ≤ σadm</td><td class="n">${f(C.sig, 1)} ≤ ${f(C.sigAdm, 1)} kN/m² &nbsp; ${tag(C.okSig)}</td></tr>`
+    : `<tr><td>Hormigón bajo el poste (t − le)</td><td class="n">${f(C.fondo, 3)} m &nbsp; ${tag(C.okFondo)}</td></tr>
+       <tr><td>Tensión en el suelo σ = G/A ≤ σadm</td><td class="n">${f(C.sig, 1)} ≤ ${f(C.sigAdm, 1)} kN/m² &nbsp; ${tag(C.okSig)}</td></tr>`}
   </table></div>`;
 }
 function htmlLong(I, L, W) {
@@ -534,6 +561,7 @@ function renderPost(R, p) {
   let s = `<h2>${p.name} — ${p.sec} (${p.sepTxt})</h2>`;
   if (p.key === "esq") s += `<p class="hint">Viento: ancho de influencia ${f(I.peTrib, 1)} m. Tiro permanente de las dos líneas del cerco a 90°.</p>`;
   if (p.key === "gate") s += `<p class="hint">Hoja abierta a 90° con viento normal a ella (Cf = ${f(p.cfLeaf, 2)}), más el momento por peso de la hoja en voladizo M = P·L/2 = ${f(p.Wleaf, 2)}·${f(I.hgL, 2)}/2 = ${f(p.Mg, 3)} kN·m${I.rueda ? " (anulado: hoja con rueda)" : ""}, en dirección perpendicular. Altura libre del poste ${f(p.hlg)} m.</p>`;
+  if (p.P.tipo === "piedra") s += `<p class="hint">Fundación sobre cama de piedra de ${f(I.ePiedra)} m: poste apoyado en la piedra y embebido en los ${f(p.P.t)} m de hormigón; excavación total ${f(p.P.t + I.ePiedra)} m; altura libre del poste ${f(p.hl)} m.</p>`;
   s += `<h3>${p.L ? "A) " : ""}Cargas de viento</h3>${tableLoads(p.w)}`;
   s += tableSulz(p.S, p.W, `Sulzberger — Fundación ${fTxt(p.P)}`);
   s += `<p class="hint">Profundidad mínima que verifica con ${p.P.forma === "circ" ? "Ø" : "lado"} ${f(p.P.d)} m: <b>${isFinite(p.tmin) ? f(p.tmin) + " m" : "mayor a 3 m — aumentar la sección"}</b></p>`;
@@ -580,8 +608,8 @@ function sketchSVG(R) {
   const I = R.I;
   const [pi, pr, pe, pg] = R.posts;
   const W = 1200, H = 480, top = 70, bot = 52;
-  const maxH = Math.max(R.hl, pg.hlg, I.hMeshBase + I.hMesh, ...I.hPuas, I.hgB + I.hgH);
-  const maxD = Math.max(I.fiT, I.frT, I.feT, I.fgT, (I.usaPuntal || I.usaPuntalE) ? I.tB : 0);
+  const maxH = Math.max(pi.hl, pr.hl, pe.hl, pg.hlg, I.hMeshBase + I.hMesh, ...I.hPuas, I.hgB + I.hgH);
+  const maxD = Math.max(...R.posts.map(p => p.P.t + (p.P.tipo === "piedra" ? I.ePiedra : 0)), (I.usaPuntal || I.usaPuntalE) ? I.tB : 0);
   const sc = (H - top - bot) / (maxH + maxD);
   const gy = top + maxH * sc;
   const Y = m => gy - m * sc;
@@ -590,6 +618,7 @@ function sketchSVG(R) {
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="Arial, Helvetica, sans-serif">`;
   s += `<defs><pattern id="mesh" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M0 6 L6 0 L12 6 L6 12 Z" fill="none" stroke="#9aa6b4" stroke-width="0.8"/></pattern>
         <pattern id="soil" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="10" stroke="#d8c9ad" stroke-width="2"/></pattern>
+        <pattern id="stone" width="10" height="8" patternUnits="userSpaceOnUse"><rect width="10" height="8" fill="#b9b2a4"/><circle cx="3" cy="3" r="2.2" fill="#8d8576"/><circle cx="8" cy="6" r="1.8" fill="#7a7364"/></pattern>
         <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#1f5fa8"/></marker></defs>`;
   s += `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
   s += `<rect x="0" y="${gy}" width="${W}" height="${H - gy}" fill="#f3ead9"/><rect x="0" y="${gy}" width="${W}" height="${H - gy}" fill="url(#soil)"/>`;
@@ -609,10 +638,11 @@ function sketchSVG(R) {
 
   function found(x, P) {
     const fw = P.d * sc;
-    return `<rect x="${x - fw / 2}" y="${gy}" width="${fw}" height="${P.t * sc}" fill="#c9ccd2" stroke="#555" stroke-width="1"/>` +
+    const ep = P.tipo === "piedra" ? I.ePiedra * sc : 0;
+    return (ep ? `<rect x="${x - fw / 2}" y="${gy + P.t * sc}" width="${fw}" height="${ep}" fill="url(#stone)" stroke="#555" stroke-width="1"/>` : "") + `<rect x="${x - fw / 2}" y="${gy}" width="${fw}" height="${P.t * sc}" fill="#c9ccd2" stroke="#555" stroke-width="1"/>` +
       `<line x1="${x + fw / 2 + 8}" y1="${gy}" x2="${x + fw / 2 + 8}" y2="${gy + P.t * sc}" stroke="#1f5fa8" marker-start="url(#arr)" marker-end="url(#arr)"/>` +
       `<text x="${x + fw / 2 + 13}" y="${gy + P.t * sc / 2 + 4}" font-size="11" fill="#1f5fa8">t=${f(P.t)}</text>` +
-      `<text x="${x}" y="${gy + P.t * sc + 16}" font-size="11" text-anchor="middle" fill="#1f5fa8">${P.forma === "circ" ? "Ø" : "□"}${f(P.d)} m</text>`;
+      `<text x="${x}" y="${gy + P.t * sc + ep + 16}" font-size="11" text-anchor="middle" fill="#1f5fa8">${P.forma === "circ" ? "Ø" : "□"}${f(P.d)} m${ep ? " + piedra" : ""}</text>`;
   }
   function post(x, P, hl, label, round) {
     const pw = Math.max(P.pb * sc, 6);
@@ -635,7 +665,7 @@ function sketchSVG(R) {
     s += strut(xs.esq, -1);
     s += `<text x="${xs.esq + 10}" y="${Y(I.ha) + 4}" font-size="10.5" fill="#55606e">+ 2º puntal a 90°</text>`;
   }
-  s += post(xs.int, pi.P, R.hl, "Intermedio") + post(xs.ref, pr.P, R.hl, "Refuerzo") + post(xs.esq, pe.P, R.hl, "Esquinero");
+  s += post(xs.int, pi.P, pi.hl, "Intermedio") + post(xs.ref, pr.P, pr.hl, "Refuerzo") + post(xs.esq, pe.P, pe.hl, "Esquinero");
   // portón
   const pgw = Math.max(I.pgD * sc, 6);
   const leafW = Math.min(I.hgL * sc, W - xs.gate - 30);
@@ -701,7 +731,7 @@ async function generarWord() {
     });
     const KV = rows => T(rows, ["Concepto", "Valor"], [6500, 3000]);
     const sp = () => new Paragraph({ text: "" });
-    const forma = Pp => `${Pp.forma === "circ" ? "circular Ø" : "cuadrada de lado "}${f(Pp.d)} m, profundidad ${f(Pp.t)} m`;
+    const forma = Pp => `${Pp.forma === "circ" ? "circular Ø" : "cuadrada de lado "}${f(Pp.d)} m, profundidad ${f(Pp.t)} m${Pp.tipo === "piedra" ? `, sobre cama de piedra de ${f(I.ePiedra)} m (excavación ${f(Pp.t + I.ePiedra)} m)` : ""}`;
 
     const loadsTable = w => T([
       ...w.loads.map(l => [l.name, f(l.A, 3), f(l.Cf, 2), f(l.F, 3), f(l.z, 2), f(l.F * l.z, 3)]),
@@ -737,9 +767,17 @@ async function generarWord() {
       ["φ·Vn ≥ Vu", OK(C.okV)],
       ["Recubrimiento lateral del poste (mín. " + f(I.recMin) + " m)", f(C.rec, 3) + " m"],
       ["Recubrimiento lateral", OK(C.okRec)],
-      ["Hormigón bajo el poste t − le (mín. " + f(I.fondoMin) + " m)", f(C.fondo, 3) + " m"],
-      ["Espesor de fondo", OK(C.okFondo)],
-      ["σ = G/A", f(C.sig, 1) + " kN/m²"],
+      ...(C.piedra ? [
+        ["Apoyo del poste sobre la piedra σ = (Wposte + cargas)/Aposte", f(C.sigTip, 1) + " kN/m²"],
+        ["σadm de la cama de piedra", f(C.sigTipAdm, 1) + " kN/m²"],
+        ["Apoyo sobre piedra", OK(C.okFondo)],
+        ["Peso de la cama de piedra", f(C.Wst, 2) + " kN"],
+        ["σ = (G + Wpiedra)/A bajo la cama", f(C.sig, 1) + " kN/m²"]
+      ] : [
+        ["Hormigón bajo el poste t − le (mín. " + f(I.fondoMin) + " m)", f(C.fondo, 3) + " m"],
+        ["Espesor de fondo", OK(C.okFondo)],
+        ["σ = G/A", f(C.sig, 1) + " kN/m²"]
+      ]),
       ["σadm", f(C.sigAdm, 1) + " kN/m²"],
       ["σ ≤ σadm", OK(C.okSig)]
     ]);
@@ -856,6 +894,14 @@ async function generarWord() {
     ch.push(H2("7.2 Hormigón simple"));
     ch.push(P("El bloque de hormigón simple trabaja como cuerpo rígido, transmitiendo las cargas al suelo por compresión; no requiere armadura. Se verifica la compresión local del hormigón frente al poste empotrado (expresión PCI para elementos embebidos) con φ = 0,65 y viento mayorado por " + f(I.gW, 1) + "; además, el recubrimiento lateral alrededor del poste y el espesor de hormigón bajo su extremo."));
     ch.push(EQ("Vn = 0,85 · f'c · b · le / (1 + 3,6 · e / le)  ;  φ · Vn ≥ Vu"));
+    if (R.posts.some(p => p.P.tipo === "piedra")) {
+      ch.push(H2("7.3 Fundación de hormigón simple sobre cama de piedra"));
+      ch.push(P(`En las fundaciones indicadas se coloca en el fondo de la excavación una cama de piedra compactada de ${f(I.ePiedra)} m de espesor, sobre la que se apoya el poste; luego se hormigona hasta el nivel de terreno. La cama de piedra permite nivelar y aplomar el poste y drenar el fondo. Para la verificación se adoptan las siguientes hipótesis:`));
+      ch.push(B("El bloque resistente de Sulzberger es sólo el hormigón (altura t, desde el NTN hasta la cama). La piedra no aporta resistencia lateral."));
+      ch.push(B("La reacción de fondo se transmite a través de la piedra; se adopta conservadoramente Cb del suelo a la profundidad t."));
+      ch.push(B("El poste queda embebido en toda la altura de hormigón (le = t), por lo que su altura libre resulta L − t."));
+      ch.push(B(`Se verifica el apoyo de la punta del poste sobre la piedra (σadm = ${f(I.sigPiedra, 1)} kg/cm²) y la tensión en el suelo bajo la cama, incluyendo el peso de la piedra (γ = ${f(I.gPiedra, 1)} kN/m³). En postes tubulares se considera la sección llena (tubo con tapa o relleno).`));
+    }
 
     // 8 Intermedio
     ch.push(H1("8. Poste intermedio"));
